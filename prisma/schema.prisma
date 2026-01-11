@@ -1,0 +1,187 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String      @id
+  username  String      @unique @db.VarChar(30)
+  nickname  String?     @db.VarChar(30)
+  userType  String?     @default("00") @db.VarChar(2) // 00是系统用户
+  email     String      @unique @db.VarChar(50)
+  phone     String?     @db.VarChar(11)
+  password  String?     @db.VarChar(100)
+  avatar    String?     @db.VarChar(100)
+  sex       String?     @db.Char(1) // 0男1女2未知
+  status    String      @default("0") @db.Char(1) // 0正常1停用
+  delFlag   String      @default("0") @db.Char(1) // 0存在2删除
+  role      String      @default("user")
+  deptId    Int? // 外键（数据库层面）
+  dept      Department? @relation(fields: [deptId], references: [deptId]) // 关系字段（orm层面），fields是表内，references是表外的键
+  loginIp   String?     @db.VarChar(128)
+  loginDate DateTime?
+  createdBy String?     @db.VarChar(64)
+  createdAt DateTime    @default(now())
+  updatedBy String?     @db.VarChar(64)
+  updatedAt DateTime    @updatedAt
+  remark    String?     @db.VarChar(500)
+
+  applications  Application[]
+  approvalTasks ApprovalTask[]
+  userPosts     UserPost[]
+
+  emailVerified Boolean   @default(false)
+  image         String?
+  sessions      Session[]
+  accounts      Account[]
+
+  @@map("user")
+}
+
+model Department {
+  deptId    Int          @id @default(autoincrement())
+  parentId  Int?
+  parent    Department?  @relation("DeptTree", fields: [parentId], references: [deptId])
+  children  Department[] @relation("DeptTree")
+  ancestors String?      @db.VarChar(50)
+  name      String       @db.VarChar(30)
+  orderNum  Int          @default(0)
+  leader    String?      @db.VarChar(20)
+  phone     String?      @db.VarChar(11)
+  email     String?      @db.VarChar(50)
+  status    String       @default("0") @db.Char(1) // 0正常1停用
+  delFlag   String       @default("0") @db.Char(1) // 0存在2删除
+  createdBy String?      @db.VarChar(64)
+  createdAt DateTime     @default(now())
+  updatedBy String?      @db.VarChar(64)
+  updatedAt DateTime     @updatedAt
+
+  users User[]
+}
+
+model Post {
+  postId    Int      @id @default(autoincrement())
+  code      String   @unique @db.VarChar(64)
+  name      String   @db.VarChar(50)
+  sort      Int      @default(0)
+  status    String   @default("0") @db.Char(1) // 0正常1停用
+  createdBy String?  @db.VarChar(64)
+  createdAt DateTime @default(now())
+  updatedBy String?  @db.VarChar(64)
+  updatedAt DateTime @updatedAt
+  remark    String?  @db.VarChar(500)
+
+  userPosts UserPost[]
+}
+
+model UserPost {
+  userId String
+  postId Int
+  user   User @relation(fields: [userId], references: [id])
+  post   Post @relation(fields: [postId], references: [postId])
+
+  @@id([userId, postId])
+}
+
+model Application {
+  applyId     Int              @id @default(autoincrement())
+  type        String           @db.VarChar(20)
+  title       String           @db.VarChar(100)
+  content     Json
+  status      String           @default("pending")
+  userId      String
+  applicant   User             @relation(fields: [userId], references: [id])
+  currentStep Int              @default(0)
+  processId   Int?
+  process     ApprovalProcess? @relation(fields: [processId], references: [processId])
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  tasks ApprovalTask[]
+}
+
+model ApprovalProcess {
+  processId Int      @id @default(autoincrement())
+  name      String   @db.VarChar(50)
+  type      String   @db.VarChar(20)
+  config    Json
+  version   Int      @default(1)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  applications Application[]
+}
+
+model ApprovalTask {
+  taskid      Int         @id @default(autoincrement())
+  applyId     Int
+  application Application @relation(fields: [applyId], references: [applyId])
+  step        Int
+  approverId  String
+  approver    User        @relation(fields: [approverId], references: [id])
+  status      String      @default("pending")
+  comment     String?     @db.Text
+  processedAt DateTime?
+  createdAt   DateTime    @default(now())
+
+  @@index([approverId, status])
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
