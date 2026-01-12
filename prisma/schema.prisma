@@ -17,15 +17,14 @@ model User {
   id        String      @id
   username  String      @unique @db.VarChar(30)
   nickname  String?     @db.VarChar(30)
-  userType  String?     @default("00") @db.VarChar(2) // 00是系统用户
   email     String      @unique @db.VarChar(50)
+  role      String      @default("user") // approver, admin
   phone     String?     @db.VarChar(11)
   password  String?     @db.VarChar(100)
   avatar    String?     @db.VarChar(100)
   sex       String?     @db.Char(1) // 0男1女2未知
   status    String      @default("0") @db.Char(1) // 0正常1停用
   delFlag   String      @default("0") @db.Char(1) // 0存在2删除
-  role      String      @default("user")
   deptId    Int? // 外键（数据库层面）
   dept      Department? @relation(fields: [deptId], references: [deptId]) // 关系字段（orm层面），fields是表内，references是表外的键
   loginIp   String?     @db.VarChar(128)
@@ -44,6 +43,10 @@ model User {
   image         String?
   sessions      Session[]
   accounts      Account[]
+
+  banned     Boolean?  @default(false)
+  banReason  String?
+  banExpires DateTime?
 
   @@map("user")
 }
@@ -87,8 +90,8 @@ model Post {
 model UserPost {
   userId String
   postId Int
-  user   User @relation(fields: [userId], references: [id])
-  post   Post @relation(fields: [postId], references: [postId])
+  user   User   @relation(fields: [userId], references: [id])
+  post   Post   @relation(fields: [postId], references: [postId])
 
   @@id([userId, postId])
 }
@@ -148,6 +151,8 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  impersonatedBy String?
 
   @@unique([token])
   @@index([userId])

@@ -1,13 +1,16 @@
-"use client"
+"use client";
 
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "@/lib/auth-clients";
 import { useEffect, useState } from "react";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface DashboardStats {
   pending: number;
   processed: number;
   total: number;
+  pendingApprovals?: number;
+  userRole: string;
   recentApplications: Array<{
     id: number;
     type: string;
@@ -20,6 +23,7 @@ interface DashboardStats {
 export default function DashboardPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
+  const { isUser, isApprover, isAdmin } = usePermissions();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -103,30 +107,49 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-card p-6 rounded-lg border">
           <h3 className="text-sm font-medium text-muted-foreground mb-2">
-            待处理
+            待处理{isUser ? "申请" : ""}
           </h3>
-          <p className="text-3xl font-bold">{loading ? "-" : stats?.pending ?? 0}</p>
+          <p className="text-3xl font-bold">
+            {loading ? "-" : stats?.pending ?? 0}
+          </p>
         </div>
         <div className="bg-card p-6 rounded-lg border">
           <h3 className="text-sm font-medium text-muted-foreground mb-2">
-            已处理
+            已处理{isUser ? "申请" : ""}
           </h3>
-          <p className="text-3xl font-bold">{loading ? "-" : stats?.processed ?? 0}</p>
+          <p className="text-3xl font-bold">
+            {loading ? "-" : stats?.processed ?? 0}
+          </p>
         </div>
         <div className="bg-card p-6 rounded-lg border">
           <h3 className="text-sm font-medium text-muted-foreground mb-2">
-            我的申请
+            {isAdmin ? "总申请数" : "我的申请"}
           </h3>
-          <p className="text-3xl font-bold">{loading ? "-" : stats?.total ?? 0}</p>
+          <p className="text-3xl font-bold">
+            {loading ? "-" : stats?.total ?? 0}
+          </p>
         </div>
+        {(isApprover || isAdmin) && (
+          <div className="bg-card p-6 rounded-lg border md:col-span-3">
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">
+              待审批任务
+            </h3>
+            <p className="text-3xl font-bold">
+              {loading ? "-" : stats?.pendingApprovals ?? 0}
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="bg-card p-6 rounded-lg border">
-        <h2 className="text-xl font-semibold mb-4">最近的申请</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          {isAdmin ? "最近的申请（全部）" : "最近的申请"}
+        </h2>
         <div className="space-y-2">
           {loading ? (
             <p className="text-muted-foreground">加载中...</p>
-          ) : stats?.recentApplications && stats.recentApplications.length > 0 ? (
+          ) : stats?.recentApplications &&
+            stats.recentApplications.length > 0 ? (
             stats.recentApplications.map((app, index) => (
               <div key={index} className="flex justify-between py-2 border-b">
                 <div>
@@ -143,6 +166,31 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* 角色说明 */}
+      <div className="mt-6 p-4 bg-muted rounded-lg">
+        <p className="text-sm text-muted-foreground">
+          当前角色:{" "}
+          <span className="font-semibold">
+            {isAdmin ? "系统管理员" : isApprover ? "审批人" : "普通员工"}
+          </span>
+        </p>
+        {isAdmin && (
+          <p className="text-xs text-muted-foreground mt-1">
+            您可以查看所有数据、管理用户和审批流程
+          </p>
+        )}
+        {isApprover && (
+          <p className="text-xs text-muted-foreground mt-1">
+            您可以审批分配给您的任务
+          </p>
+        )}
+        {isUser && (
+          <p className="text-xs text-muted-foreground mt-1">
+            您可以创建和管理自己的申请
+          </p>
+        )}
+      </div>
     </div>
-  )
+  );
 }

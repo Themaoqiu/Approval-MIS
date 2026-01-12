@@ -13,6 +13,7 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     const formData = new FormData(e.currentTarget);
     const password = formData.get("password") as string;
@@ -21,6 +22,7 @@ export default function SignUpPage() {
 
     if (password !== confirmPassword) {
       setError("两次输入的密码不匹配");
+      setLoading(false);
       return;
     }
 
@@ -38,7 +40,8 @@ export default function SignUpPage() {
     } else {
       router.push("/sign-in");
     }
-  }
+  };
+
 
   return (
     <div className="bg-card rounded-lg shadow-lg p-8">

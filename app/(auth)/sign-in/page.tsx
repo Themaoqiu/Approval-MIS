@@ -6,14 +6,14 @@ import { signIn } from "@/lib/auth-clients"
 import Link from "next/link"
 
 export default function SignInPage() {
-  const router = useRouter()
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setError("")
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
     const formData = new FormData(e.currentTarget)
 
@@ -29,7 +29,7 @@ export default function SignInPage() {
     } else {
       router.push("/dashboard");
     }
-  }
+  };
 
   return (
     <div className="bg-card rounded-lg shadow-lg p-8">
