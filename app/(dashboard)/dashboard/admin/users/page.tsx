@@ -4,11 +4,29 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePermissions } from "@/hooks/usePermissions";
 import { authClient } from "@/lib/auth-clients";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card } from "@/components/ui/card";
 
 interface User {
   id: string;
-  username: string;
-  name: string | null;
+  name: string;
+  nickname: string | null;
   email: string;
   role: string;
   banned: boolean;
@@ -109,68 +127,71 @@ export default function UsersPage() {
     <div>
       <h1 className="text-3xl font-bold mb-6">用户管理</h1>
 
-      <div className="bg-card rounded-lg border">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="border-b">
-              <tr>
-                <th className="text-left p-4 font-medium">用户名</th>
-                <th className="text-left p-4 font-medium">姓名</th>
-                <th className="text-left p-4 font-medium">邮箱</th>
-                <th className="text-left p-4 font-medium">角色</th>
-                <th className="text-left p-4 font-medium">状态</th>
-                <th className="text-left p-4 font-medium">创建时间</th>
-                <th className="text-left p-4 font-medium">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u.id} className="border-b last:border-0">
-                  <td className="p-4">{u.username}</td>
-                  <td className="p-4">{u.name || "-"}</td>
-                  <td className="p-4">{u.email}</td>
-                  <td className="p-4">
-                    <select
+      <Card className="p-0 border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-center">用户名</TableHead>
+              <TableHead className="text-center">昵称</TableHead>
+              <TableHead className="text-center">邮箱</TableHead>
+              <TableHead className="text-center">角色</TableHead>
+              <TableHead className="text-center">状态</TableHead>
+              <TableHead className="text-center">创建时间</TableHead>
+              <TableHead className="text-center">操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {users.map((u) => (
+              <TableRow key={u.id}>
+                <TableCell className="text-center">{u.name || "-"}</TableCell>
+                <TableCell className="text-center">{u.nickname || "-"}</TableCell>
+                <TableCell className="text-center">{u.email}</TableCell>
+                <TableCell className="text-center">
+                  <div className="flex justify-center">
+                    <Select
                       value={u.role}
-                      onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                      className="px-2 py-1 border rounded bg-background"
-                      disabled={u.id === user?.id} // 不能修改自己的角色
+                      onValueChange={(newRole) =>
+                        handleRoleChange(u.id, newRole)
+                      }
+                      disabled={u.id === user?.id}
                     >
-                      <option value="user">普通员工</option>
-                      <option value="approver">审批人</option>
-                      <option value="admin">系统管理员</option>
-                    </select>
-                  </td>
-                  <td className="p-4">
-                    {u.banned ? (
-                      <span className="text-red-600 text-sm">已禁用</span>
-                    ) : (
-                      <span className="text-green-600 text-sm">正常</span>
-                    )}
-                  </td>
-                  <td className="p-4 text-sm text-muted-foreground">
-                    {new Date(u.createdAt).toLocaleDateString("zh-CN")}
-                  </td>
-                  <td className="p-4">
-                    {u.id !== user?.id && (
-                      <button
-                        onClick={() => handleBanUser(u.id, u.banned)}
-                        className={`px-3 py-1 text-sm rounded ${
-                          u.banned
-                            ? "bg-green-600 hover:bg-green-700 text-white"
-                            : "bg-red-600 hover:bg-red-700 text-white"
-                        }`}
-                      >
-                        {u.banned ? "启用" : "禁用"}
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="user">普通员工</SelectItem>
+                        <SelectItem value="approver">审批人</SelectItem>
+                        <SelectItem value="admin">系统管理员</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  {u.banned ? (
+                    <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-300">已禁用</Badge>
+                  ) : (
+                    <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-300">正常</Badge>
+                  )}
+                </TableCell>
+                <TableCell className="text-center">
+                  {new Date(u.createdAt).toLocaleDateString("zh-CN")}
+                </TableCell>
+                <TableCell className="text-center">
+                  {u.id !== user?.id && (
+                    <Button
+                      onClick={() => handleBanUser(u.id, u.banned)}
+                      variant={u.banned ? "default" : "destructive"}
+                      size="sm"
+                    >
+                      {u.banned ? "启用" : "禁用"}
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
 
       {users.length === 0 && (
         <p className="text-center text-muted-foreground py-8">暂无用户</p>
