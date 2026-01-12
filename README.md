@@ -35,14 +35,16 @@ BETTER_AUTH_URL="http://localhost:3000"
 
 1. Initialize the database:
 ```bash
+# Install dependencies
+bun install
+
 bunx prisma migrate dev --name init
 
 # Optional: If you modify the schema later, run this to sync directly
 bunx prisma generate
 ```
 
-2. Install dependencies and start:
+2. Start development server:
 ```bash
-bun install
 bun dev
 ```
