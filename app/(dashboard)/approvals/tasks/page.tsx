@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ApplicationStatusBadge } from "@/components/application/ApplicationStatusBadge";
 
 export default function ApprovalTasksPage() {
   const router = useRouter();
