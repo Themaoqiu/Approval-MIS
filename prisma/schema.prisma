@@ -190,3 +190,35 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
+
+model FormTemplate {
+  formId    Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  code      String   @unique @db.VarChar(50)
+  category  String   @db.VarChar(50)
+  version   Int      @default(1)
+  schema    Json
+  isActive  Boolean  @default(true)
+  isSystem  Boolean  @default(false)
+  createdBy String?  @db.VarChar(64)
+  createdAt DateTime @default(now())
+  updatedBy String?  @db.VarChar(64)
+  updatedAt DateTime @updatedAt
+  remark    String?  @db.VarChar(500)
+
+  @@index([category, isActive])
+}
+
+model Statistics {
+  statId    Int      @id @default(autoincrement())
+  userId    String?
+  deptId    Int?
+  statType  String   @db.VarChar(20)
+  period    String   @db.VarChar(20)
+  date      DateTime
+  metrics   Json
+  createdAt DateTime @default(now())
+
+  @@index([userId, period, date])
+  @@index([deptId, period, date])
+}

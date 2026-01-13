@@ -96,37 +96,26 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    // 检查是否有子部门
     const children = await prisma.department.count({
       where: {
         parentId: parseInt(id),
         delFlag: "0",
       },
     });
-
     if (children > 0) {
-      return NextResponse.json(
-        { error: "该部门下有子部门，无法删除" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "该部门下有子部门，无法删除" }, { status: 400 });
     }
 
-    // 检查是否有用户
     const users = await prisma.user.count({
       where: {
         deptId: parseInt(id),
         delFlag: "0",
       },
     });
-
     if (users > 0) {
-      return NextResponse.json(
-        { error: "该部门下有用户，无法删除" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "该部门下有用户，无法删除" }, { status: 400 });
     }
 
-    // 软删除
     await prisma.department.update({
       where: { deptId: parseInt(id) },
       data: {

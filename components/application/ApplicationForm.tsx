@@ -6,7 +6,15 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import {
+  Field,
+  FieldGroup,
+  FieldLabel,
+  FieldDescription,
+  FieldSet,
+  FieldLegend,
+  FieldSeparator,
+} from "@/components/ui/field";
 import {
   Select,
   SelectContent,
@@ -24,7 +32,7 @@ import {
 import { CalendarIcon } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { zhCN } from "date-fns/locale";
-import { Separator } from "@/components/ui/separator";
+import { type DateRange } from "react-day-picker";
 
 export function ApplicationForm() {
   const router = useRouter();
@@ -33,8 +41,7 @@ export function ApplicationForm() {
 
   const [leaveData, setLeaveData] = useState({
     leaveType: "",
-    startDate: undefined as Date | undefined,
-    endDate: undefined as Date | undefined,
+    dateRange: undefined as DateRange | undefined,
     reason: ""
   });
 
@@ -44,8 +51,8 @@ export function ApplicationForm() {
     reason: ""
   });
 
-  const days = leaveData.startDate && leaveData.endDate
-    ? differenceInDays(leaveData.endDate, leaveData.startDate) + 1
+  const days = leaveData.dateRange?.from && leaveData.dateRange?.to
+    ? differenceInDays(leaveData.dateRange.to, leaveData.dateRange.from) + 1
     : 0;
 
   const handleSubmit = async () => {
@@ -53,15 +60,15 @@ export function ApplicationForm() {
     let content = {};
 
     if (type === "leave") {
-      if (!leaveData.leaveType || !leaveData.startDate || !leaveData.endDate || !leaveData.reason) {
+      if (!leaveData.leaveType || !leaveData.dateRange?.from || !leaveData.dateRange?.to || !leaveData.reason) {
         toast.error("请填写完整信息");
         return;
       }
       title = `请假申请 - ${leaveData.leaveType}`;
       content = {
         leaveType: leaveData.leaveType,
-        startDate: leaveData.startDate.toISOString(),
-        endDate: leaveData.endDate.toISOString(),
+        startDate: leaveData.dateRange.from.toISOString(),
+        endDate: leaveData.dateRange.to.toISOString(),
         days,
         reason: leaveData.reason
       };
@@ -105,153 +112,164 @@ export function ApplicationForm() {
 
   return (
     <Card className="p-6">
-      <h2 className="text-2xl font-bold">新建申请</h2>
-      <Separator />
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <Label>申请类型</Label>
-          <Select value={type} onValueChange={setType}>
-            <SelectTrigger>
-              <SelectValue placeholder="选择申请类型" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="leave">请假申请</SelectItem>
-              <SelectItem value="reimbursement">报销申请</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {type === "leave" && (
-          <>
-            <div className="space-y-2">
-              <Label>请假类型</Label>
-              <Select
-                value={leaveData.leaveType}
-                onValueChange={(v) => setLeaveData({ ...leaveData, leaveType: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="选择请假类型" />
+      <h2 className="text-2xl font-bold mb-6">新建申请</h2>
+      <form>
+        <FieldGroup>
+          <div className="grid grid-cols-2 gap-4">
+            <Field>
+              <FieldLabel htmlFor="type">申请类型</FieldLabel>
+              <Select value={type} onValueChange={setType}>
+                <SelectTrigger id="type">
+                  <SelectValue placeholder="选择申请类型" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="事假">事假</SelectItem>
-                  <SelectItem value="病假">病假</SelectItem>
-                  <SelectItem value="年假">年假</SelectItem>
-                  <SelectItem value="调休">调休</SelectItem>
+                  <SelectItem value="leave">请假申请</SelectItem>
+                  <SelectItem value="reimbursement">报销申请</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
+          </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>开始日期</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {leaveData.startDate ? format(leaveData.startDate, "PPP", { locale: zhCN }) : "选择日期"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={leaveData.startDate}
-                      onSelect={(date) => setLeaveData({ ...leaveData, startDate: date })}
-                      locale={zhCN}
+          {type === "leave" && (
+            <FieldSet>
+              <FieldLegend>请假信息</FieldLegend>
+              <FieldSeparator />
+              <FieldGroup>
+                <div className="grid grid-cols-2 gap-4">
+                  <Field>
+                    <FieldLabel htmlFor="leaveType">请假类型</FieldLabel>
+                    <Select
+                      value={leaveData.leaveType}
+                      onValueChange={(v) => setLeaveData({ ...leaveData, leaveType: v })}
+                    >
+                      <SelectTrigger id="leaveType">
+                        <SelectValue placeholder="选择请假类型" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="事假">事假</SelectItem>
+                        <SelectItem value="病假">病假</SelectItem>
+                        <SelectItem value="年假">年假</SelectItem>
+                        <SelectItem value="调休">调休</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+
+                  <Field>
+                    <FieldLabel>请假日期</FieldLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-full justify-start">
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {leaveData.dateRange?.from ? (
+                            leaveData.dateRange.to ? (
+                              <>
+                                {format(leaveData.dateRange.from, "PPP", { locale: zhCN })} -{" "}
+                                {format(leaveData.dateRange.to, "PPP", { locale: zhCN })}
+                              </>
+                            ) : (
+                              format(leaveData.dateRange.from, "PPP", { locale: zhCN })
+                            )
+                          ) : (
+                            "选择日期范围"
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="range"
+                          defaultMonth={leaveData.dateRange?.from}
+                          selected={leaveData.dateRange}
+                          onSelect={(range) => setLeaveData({ ...leaveData, dateRange: range })}
+                          numberOfMonths={2}
+                          locale={zhCN}
+                          className="rounded-lg border shadow-sm"
+                          disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </Field>
+                </div>
+
+                {days > 0 && (
+                  <FieldDescription>请假天数：{days} 天</FieldDescription>
+                )}
+
+                <Field>
+                  <FieldLabel htmlFor="leaveReason">请假事由</FieldLabel>
+                  <Textarea
+                    id="leaveReason"
+                    value={leaveData.reason}
+                    onChange={(e) => setLeaveData({ ...leaveData, reason: e.target.value })}
+                    placeholder="请输入请假事由"
+                    rows={4}
+                  />
+                </Field>
+              </FieldGroup>
+            </FieldSet>
+          )}
+
+          {type === "reimbursement" && (
+            <FieldSet>
+              <FieldLegend>报销信息</FieldLegend>
+              <FieldSeparator />
+              <FieldGroup>
+                <div className="grid grid-cols-2 gap-4">
+                  <Field>
+                    <FieldLabel htmlFor="expenseType">费用类型</FieldLabel>
+                    <Select
+                      value={reimbursementData.expenseType}
+                      onValueChange={(v) => setReimbursementData({ ...reimbursementData, expenseType: v })}
+                    >
+                      <SelectTrigger id="expenseType">
+                        <SelectValue placeholder="选择费用类型" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="差旅费">差旅费</SelectItem>
+                        <SelectItem value="餐费">餐费</SelectItem>
+                        <SelectItem value="交通费">交通费</SelectItem>
+                        <SelectItem value="办公用品">办公用品</SelectItem>
+                        <SelectItem value="其他">其他</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="amount">报销金额（元）</FieldLabel>
+                    <Input
+                      id="amount"
+                      type="number"
+                      value={reimbursementData.amount}
+                      onChange={(e) => setReimbursementData({ ...reimbursementData, amount: e.target.value })}
+                      placeholder="请输入金额"
                     />
-                  </PopoverContent>
-                </Popover>
-              </div>
+                    <FieldDescription>请输入实际报销金额</FieldDescription>
+                  </Field>
+                </div>
 
-              <div className="space-y-2">
-                <Label>结束日期</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {leaveData.endDate ? format(leaveData.endDate, "PPP", { locale: zhCN }) : "选择日期"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={leaveData.endDate}
-                      onSelect={(date) => setLeaveData({ ...leaveData, endDate: date })}
-                      locale={zhCN}
-                      disabled={(date) => leaveData.startDate ? date < leaveData.startDate : false}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
+                <Field>
+                  <FieldLabel htmlFor="reimbursementReason">报销事由</FieldLabel>
+                  <Textarea
+                    id="reimbursementReason"
+                    value={reimbursementData.reason}
+                    onChange={(e) => setReimbursementData({ ...reimbursementData, reason: e.target.value })}
+                    placeholder="请输入报销事由"
+                    rows={4}
+                  />
+                </Field>
+              </FieldGroup>
+            </FieldSet>
+          )}
 
-            {days > 0 && (
-              <p className="text-sm text-muted-foreground">请假天数：{days} 天</p>
-            )}
-
-            <div className="space-y-2">
-              <Label>请假事由</Label>
-              <Textarea
-                value={leaveData.reason}
-                onChange={(e) => setLeaveData({ ...leaveData, reason: e.target.value })}
-                placeholder="请输入请假事由"
-                rows={4}
-              />
-            </div>
-          </>
-        )}
-
-        {type === "reimbursement" && (
-          <>
-            <div>
-              <Label>费用类型</Label>
-              <Select
-                value={reimbursementData.expenseType}
-                onValueChange={(v) => setReimbursementData({ ...reimbursementData, expenseType: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="选择费用类型" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="差旅费">差旅费</SelectItem>
-                  <SelectItem value="餐费">餐费</SelectItem>
-                  <SelectItem value="交通费">交通费</SelectItem>
-                  <SelectItem value="办公用品">办公用品</SelectItem>
-                  <SelectItem value="其他">其他</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>报销金额（元）</Label>
-              <Input
-                type="number"
-                value={reimbursementData.amount}
-                onChange={(e) => setReimbursementData({ ...reimbursementData, amount: e.target.value })}
-                placeholder="请输入金额"
-              />
-            </div>
-
-            <div>
-              <Label>报销事由</Label>
-              <Textarea
-                value={reimbursementData.reason}
-                onChange={(e) => setReimbursementData({ ...reimbursementData, reason: e.target.value })}
-                placeholder="请输入报销事由"
-                rows={4}
-              />
-            </div>
-          </>
-        )}
-
-        <div className="flex gap-4">
-          <Button onClick={handleSubmit} disabled={loading || !type}>
-            {loading ? "提交中..." : "提交申请"}
-          </Button>
-          <Button variant="outline" onClick={() => router.back()}>
-            取消
-          </Button>
-        </div>
-      </div>
+          <div className="flex gap-2">
+            <Button type="button" onClick={handleSubmit} disabled={loading || !type}>
+              {loading ? "提交中..." : "提交申请"}
+            </Button>
+            <Button type="button" variant="outline" onClick={() => router.back()}>
+              取消
+            </Button>
+          </div>
+        </FieldGroup>
+      </form>
     </Card>
   );
 }

@@ -12,6 +12,9 @@ import {
   Building2,
   FolderKanban,
   ChevronRight,
+  Briefcase,
+  BarChart3,
+  FileEdit,
 } from "lucide-react";
 import {
   Sidebar,
@@ -38,7 +41,7 @@ export default function AppSidebar() {
 
   const baseNavItems = [
     { name: "仪表板", href: "/dashboard", icon: Home },
-    { name: "新建申请", href: "/applications/new", icon: FileText },
+    { name: "发起申请", href: "/applications/new", icon: FileText },
     { name: "我的申请", href: "/applications/my", icon: ClipboardList },
   ];
 
@@ -46,10 +49,23 @@ export default function AppSidebar() {
     { name: "审批任务", href: "/approvals/tasks", icon: CheckSquare },
   ];
 
-  const adminNavItems = [
+  const statisticsNavItems = [
+    { name: "个人统计", href: "/statistics/personal", icon: BarChart3 },
+  ];
+
+  const adminStatisticsNavItems = [
+    { name: "部门统计", href: "/admin/statistics/department", icon: BarChart3 },
+  ];
+
+  const adminTopLevelNavItems = [
+    { name: "所有申请", href: "/admin/applications", icon: FolderKanban },
+    { name: "表单设计", href: "/admin/forms", icon: FileEdit },
+  ];
+
+  const adminSystemNavItems = [
     { name: "用户管理", href: "/admin/users", icon: Users },
     { name: "部门管理", href: "/admin/departments", icon: Building2 },
-    { name: "所有申请", href: "/admin/applications", icon: FolderKanban },
+    { name: "岗位管理", href: "/admin/posts", icon: Briefcase },
   ];
 
   const isActive = (href: string) => pathname === href;
@@ -94,14 +110,8 @@ export default function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
-          </SidebarMenu>
-        </SidebarGroup>
-
-        {(isApprover || isAdmin) && (
-          <SidebarGroup>
-            <SidebarGroupLabel>审批</SidebarGroupLabel>
-            <SidebarMenu>
-              {approverNavItems.map((item) => (
+            {(isApprover || isAdmin) &&
+              approverNavItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
@@ -115,14 +125,63 @@ export default function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-            </SidebarMenu>
-          </SidebarGroup>
-        )}
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>统计分析</SidebarGroupLabel>
+          <SidebarMenu>
+            {statisticsNavItems.map((item) => (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive(item.href)}
+                  tooltip={item.name}
+                >
+                  <Link href={item.href}>
+                    <item.icon />
+                    <span>{item.name}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+            {isAdmin &&
+              adminStatisticsNavItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.href)}
+                    tooltip={item.name}
+                  >
+                    <Link href={item.href}>
+                      <item.icon />
+                      <span>{item.name}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+          </SidebarMenu>
+        </SidebarGroup>
 
         {isAdmin && (
           <SidebarGroup>
             <SidebarGroupLabel>系统</SidebarGroupLabel>
             <SidebarMenu>
+              {adminTopLevelNavItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.href)}
+                    tooltip={item.name}
+                  >
+                    <Link href={item.href}>
+                      <item.icon />
+                      <span>{item.name}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+
               <Collapsible defaultOpen className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
@@ -134,7 +193,7 @@ export default function AppSidebar() {
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <SidebarMenuSub>
-                      {adminNavItems.map((item) => (
+                      {adminSystemNavItems.map((item) => (
                         <SidebarMenuSubItem key={item.href}>
                           <SidebarMenuSubButton
                             asChild

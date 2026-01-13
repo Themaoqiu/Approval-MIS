@@ -32,7 +32,7 @@ async function main() {
     { code: "PROFESSOR", name: "教授", sort: 3 },
     { code: "ASSOCIATE_PROF", name: "副教授", sort: 4 },
     { code: "LECTURER", name: "讲师", sort: 5 },
-    { code: "RESEARCH_FELLOW", name: "研究员", sort: 6 },
+    { code: "HEAD_TEACHER", name: "辅导员", sort: 6 },
     { code: "ADMINISTRATOR", name: "管理员", sort: 7 },
   ];
 

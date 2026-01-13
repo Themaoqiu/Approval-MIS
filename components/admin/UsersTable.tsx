@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,15 +34,16 @@ interface User {
 interface UsersTableProps {
   users: User[];
   onRefresh: () => Promise<void>;
+  onEdit: (userId: string) => void;
   currentUserId: string;
 }
 
 export function UsersTable({
   users,
   onRefresh,
+  onEdit,
   currentUserId,
 }: UsersTableProps) {
-  const router = useRouter();
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
@@ -147,7 +147,7 @@ export function UsersTable({
               <TableCell className="text-center">
                 <div className="flex justify-center gap-2">
                   <Button
-                    onClick={() => router.push(`/admin/users/${u.id}`)}
+                    onClick={() => onEdit(u.id)}
                     variant="outline"
                     size="sm"
                   >
