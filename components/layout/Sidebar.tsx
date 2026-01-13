@@ -3,98 +3,158 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { usePermissions } from "@/hooks/use-permissions";
-import { Separator } from "@/components/ui/separator";
+import {
+  Home,
+  FileText,
+  ClipboardList,
+  CheckSquare,
+  Users,
+  Building2,
+  FolderKanban,
+  ChevronRight,
+} from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
+} from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
-export default function Sidebar() {
+export default function AppSidebar() {
   const pathname = usePathname();
-  const { isUser, isApprover, isAdmin } = usePermissions();
+  const { isApprover, isAdmin } = usePermissions();
 
   const baseNavItems = [
-    { name: "仪表板", href: "/dashboard" },
-    { name: "新建申请", href: "/applications/new" },
-    { name: "我的申请", href: "/applications/my" },
+    { name: "仪表板", href: "/dashboard", icon: Home },
+    { name: "新建申请", href: "/applications/new", icon: FileText },
+    { name: "我的申请", href: "/applications/my", icon: ClipboardList },
   ];
 
   const approverNavItems = [
-    { name: "审批", href: "/approvals/tasks" },
+    { name: "审批任务", href: "/approvals/tasks", icon: CheckSquare },
   ];
 
   const adminNavItems = [
-    { name: "用户管理", href: "/admin/users" },
-    { name: "部门管理", href: "/admin/departments" },
-    { name: "所有申请", href: "/admin/applications" },
+    { name: "用户管理", href: "/admin/users", icon: Users },
+    { name: "部门管理", href: "/admin/departments", icon: Building2 },
+    { name: "所有申请", href: "/admin/applications", icon: FolderKanban },
   ];
 
+  const isActive = (href: string) => pathname === href;
+
   return (
-    <aside className="w-64 bg-card border-r">
-      <div className="p-6">
-        <h2 className="text-xl font-bold">审批系统</h2>
-        {isAdmin && (
-          <p className="text-xs text-muted-foreground mt-1">管理员</p>
-        )}
-        {isApprover && !isAdmin && (
-          <p className="text-xs text-muted-foreground mt-1">审批人</p>
-        )}
-      </div>
-      <nav className="px-4">
-        <div>
-          {baseNavItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`block px-4 py-2 rounded-md mb-1 ${
-                pathname === item.href
-                  ? "bg-primary text-primary-foreground"
-                  : "hover:bg-muted"
-              }`}
-            >
-              {item.name}
-            </Link>
-          ))}
-        </div>
+    <Sidebar collapsible="icon">
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <Link href="/dashboard">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                  <Home className="size-4" />
+                </div>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">审批管理系统</span>
+                  <span className="truncate text-xs">
+                    {isAdmin ? "管理员" : isApprover ? "审批员" : "用户"}
+                  </span>
+                </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>工作区</SidebarGroupLabel>
+          <SidebarMenu>
+            {baseNavItems.map((item) => (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive(item.href)}
+                  tooltip={item.name}
+                >
+                  <Link href={item.href}>
+                    <item.icon />
+                    <span>{item.name}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
 
         {(isApprover || isAdmin) && (
-          <>
-            <Separator className="my-3" />
-            <div>
+          <SidebarGroup>
+            <SidebarGroupLabel>审批</SidebarGroupLabel>
+            <SidebarMenu>
               {approverNavItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`block px-4 py-2 rounded-md mb-1 ${
-                    pathname === item.href
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted"
-                  }`}
-                >
-                  {item.name}
-                </Link>
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.href)}
+                    tooltip={item.name}
+                  >
+                    <Link href={item.href}>
+                      <item.icon />
+                      <span>{item.name}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               ))}
-            </div>
-          </>
+            </SidebarMenu>
+          </SidebarGroup>
         )}
 
         {isAdmin && (
-          <>
-            <Separator className="my-3" />
-            <div>
-              {adminNavItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`block px-4 py-2 rounded-md mb-1 ${
-                    pathname === item.href
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted"
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-          </>
+          <SidebarGroup>
+            <SidebarGroupLabel>系统</SidebarGroupLabel>
+            <SidebarMenu>
+              <Collapsible defaultOpen className="group/collapsible">
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton tooltip="系统管理">
+                      <Building2 />
+                      <span>系统管理</span>
+                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {adminNavItems.map((item) => (
+                        <SidebarMenuSubItem key={item.href}>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={isActive(item.href)}
+                          >
+                            <Link href={item.href}>
+                              <item.icon className="size-4" />
+                              <span>{item.name}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+            </SidebarMenu>
+          </SidebarGroup>
         )}
-      </nav>
-    </aside>
+      </SidebarContent>
+    </Sidebar>
   );
 }

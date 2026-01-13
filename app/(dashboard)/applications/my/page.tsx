@@ -5,25 +5,10 @@ import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-clients";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { ApplicationStatusBadge } from "@/components/application/ApplicationStatusBadge";
+import { MyApplicationsTable } from "@/components/application/MyApplicationsTable";
+import { WithdrawDialog } from "@/components/application/WithdrawDialog";
 
 export default function MyApplicationsPage() {
   const router = useRouter();
@@ -33,7 +18,6 @@ export default function MyApplicationsPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
   const [withdrawApplyId, setWithdrawApplyId] = useState<number | null>(null);
-  const [withdrawing, setWithdrawing] = useState(false);
 
   const fetchApplications = async (status: string) => {
     setLoading(true);
@@ -54,7 +38,7 @@ export default function MyApplicationsPage() {
     fetchApplications(activeTab);
   }, [activeTab]);
 
-  const handleWithdraw = async (applyId: number) => {
+  const handleWithdraw = (applyId: number) => {
     setWithdrawApplyId(applyId);
     setWithdrawDialogOpen(true);
   };
@@ -62,10 +46,9 @@ export default function MyApplicationsPage() {
   const confirmWithdraw = async () => {
     if (!withdrawApplyId) return;
 
-    setWithdrawing(true);
     try {
       const res = await fetch(`/api/applications/${withdrawApplyId}/withdraw`, {
-        method: "POST"
+        method: "POST",
       });
 
       if (res.ok) {
@@ -79,17 +62,7 @@ export default function MyApplicationsPage() {
       }
     } catch (error) {
       toast.error("撤回失败");
-    } finally {
-      setWithdrawing(false);
     }
-  };
-
-  const getTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      leave: "请假",
-      reimbursement: "报销"
-    };
-    return labels[type] || type;
   };
 
   return (
@@ -114,95 +87,20 @@ export default function MyApplicationsPage() {
           </div>
 
           <TabsContent value={activeTab} className="mt-0">
-            {loading ? (
-              <p className="text-center py-8 text-muted-foreground">加载中...</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-center">标题</TableHead>
-                    <TableHead className="text-center">类型</TableHead>
-                    <TableHead className="text-center">状态</TableHead>
-                    <TableHead className="text-center">创建时间</TableHead>
-                    <TableHead className="text-center">操作</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {applications.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground">
-                        暂无申请
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    applications.map((app) => (
-                      <TableRow key={app.applyId}>
-                        <TableCell className="text-center">{app.title}</TableCell>
-                        <TableCell className="text-center">{getTypeLabel(app.type)}</TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex justify-center">
-                            <ApplicationStatusBadge status={app.status} />
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {new Date(app.createdAt).toLocaleDateString("zh-CN")}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex gap-2 justify-center">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => router.push(`/applications/${app.applyId}`)}
-                            >
-                              查看
-                            </Button>
-                            {app.status === "pending" && app.currentStep === 0 && (
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleWithdraw(app.applyId)}
-                              >
-                                撤回
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            )}
+            <MyApplicationsTable
+              applications={applications}
+              loading={loading}
+              onWithdraw={handleWithdraw}
+            />
           </TabsContent>
         </Tabs>
       </Card>
 
-      <Dialog open={withdrawDialogOpen} onOpenChange={setWithdrawDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>撤回申请</DialogTitle>
-            <DialogDescription>
-              确定要撤回此申请吗？撤回后申请将无法继续审批。
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setWithdrawDialogOpen(false)}
-              disabled={withdrawing}
-            >
-              取消
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmWithdraw}
-              disabled={withdrawing}
-            >
-              {withdrawing ? "撤回中..." : "确认撤回"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <WithdrawDialog
+        open={withdrawDialogOpen}
+        onOpenChange={setWithdrawDialogOpen}
+        onConfirm={confirmWithdraw}
+      />
     </div>
   );
 }

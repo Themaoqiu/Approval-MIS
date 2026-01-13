@@ -70,6 +70,7 @@ export default function UserEditPage() {
     status: "0",
     deptId: "",
     remark: "",
+    role: "user",
     postIds: [] as number[],
   });
 
@@ -108,6 +109,7 @@ export default function UserEditPage() {
           status: userData.status,
           deptId: userData.deptId?.toString() || "",
           remark: userData.remark || "",
+          role: userData.role || "user",
           postIds: userData.userPosts.map((up: any) => up.postId),
         });
       }
@@ -156,6 +158,19 @@ export default function UserEditPage() {
       toast.error("保存失败");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case "admin":
+        return "系统管理员";
+      case "approver":
+        return "审批人";
+      case "user":
+        return "普通员工";
+      default:
+        return "普通员工";
     }
   };
 
@@ -314,17 +329,22 @@ export default function UserEditPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>当前角色</Label>
-              <Input
-                value={
-                  userInfo.role === "admin"
-                    ? "系统管理员"
-                    : userInfo.role === "approver"
-                      ? "审批人"
-                      : "普通员工"
+              <Label htmlFor="role">用户角色 *</Label>
+              <Select
+                value={formData.role}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, role: value })
                 }
-                disabled
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="请选择角色" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">普通员工</SelectItem>
+                  <SelectItem value="approver">审批人</SelectItem>
+                  <SelectItem value="admin">系统管理员</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

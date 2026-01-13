@@ -3,18 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePermissions } from "@/hooks/use-permissions";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ApplicationStatusBadge } from "@/components/application/ApplicationStatusBadge";
+import { AdminApplicationsTable } from "@/components/admin/AdminApplicationsTable";
 
 export default function AdminApplicationsPage() {
   const router = useRouter();
@@ -46,14 +37,6 @@ export default function AdminApplicationsPage() {
     }
   };
 
-  const getTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      leave: "请假",
-      reimbursement: "报销"
-    };
-    return labels[type] || type;
-  };
-
   if (!isAdmin) {
     return null;
   }
@@ -75,58 +58,10 @@ export default function AdminApplicationsPage() {
           </div>
 
           <TabsContent value={activeTab} className="mt-0">
-            {loading ? (
-              <p className="text-center py-8 text-muted-foreground">加载中...</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-center">标题</TableHead>
-                    <TableHead className="text-center">类型</TableHead>
-                    <TableHead className="text-center">申请人</TableHead>
-                    <TableHead className="text-center">状态</TableHead>
-                    <TableHead className="text-center">创建时间</TableHead>
-                    <TableHead className="text-center">操作</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {applications.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground">
-                        暂无申请
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    applications.map((app) => (
-                      <TableRow key={app.applyId}>
-                        <TableCell className="text-center">{app.title}</TableCell>
-                        <TableCell className="text-center">{getTypeLabel(app.type)}</TableCell>
-                        <TableCell className="text-center">
-                          {app.applicant.nickname || app.applicant.username}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex justify-center">
-                            <ApplicationStatusBadge status={app.status} />
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {new Date(app.createdAt).toLocaleDateString("zh-CN")}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => router.push(`/applications/${app.applyId}`)}
-                          >
-                            查看
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            )}
+            <AdminApplicationsTable
+              applications={applications}
+              loading={loading}
+            />
           </TabsContent>
         </Tabs>
       </Card>

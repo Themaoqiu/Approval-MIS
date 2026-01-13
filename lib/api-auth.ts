@@ -44,12 +44,6 @@ export async function checkPermission(
   }
 }
 
-/**
- * 检查用户是否可以访问资源
- * @param user 用户对象
- * @param resourceOwnerId 资源所有者ID
- * @param allowedRoles 允许访问的角色
- */
 export function canAccessResource(
   user: any,
   resourceOwnerId: string,

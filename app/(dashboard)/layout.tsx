@@ -1,22 +1,85 @@
 "use client";
 
-import Sidebar from "@/components/layout/Sidebar";
+import AppSidebar from "@/components/layout/Sidebar";
+import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import Header from "@/components/layout/Header";
 import { Toaster } from "sonner";
+import { usePathname } from "next/navigation";
+
+const getBreadcrumbs = (pathname: string) => {
+  const pathMap: Record<string, { label: string; parent?: string }> = {
+    "/dashboard": { label: "仪表板" },
+    "/applications/new": { label: "新建申请", parent: "申请管理" },
+    "/applications/my": { label: "我的申请", parent: "申请管理" },
+    "/approvals/tasks": { label: "审批任务", parent: "审批管理" },
+    "/admin/users": { label: "用户管理", parent: "系统管理" },
+    "/admin/departments": { label: "部门管理", parent: "系统管理" },
+    "/admin/applications": { label: "所有申请", parent: "系统管理" },
+  };
+
+  const current = pathMap[pathname];
+  if (!current) return null;
+
+  return {
+    parent: current.parent,
+    current: current.label,
+  };
+};
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const breadcrumbs = getBreadcrumbs(pathname);
+
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <Toaster position="top-right" richColors />
-      <div className="flex-1 flex flex-col">
-        <Header />
-        <main className="flex-1 p-6">{children}</main>
-      </div>
-    </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-4 w-full">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            {breadcrumbs && (
+              <Breadcrumb>
+                <BreadcrumbList>
+                  {breadcrumbs.parent && (
+                    <>
+                      <BreadcrumbItem className="hidden md:block">
+                        <BreadcrumbLink href="#">
+                          {breadcrumbs.parent}
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+                      <BreadcrumbSeparator className="hidden md:block" />
+                    </>
+                  )}
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>{breadcrumbs.current}</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            )}
+            <div className="ml-auto">
+              <Header />
+            </div>
+          </div>
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          {children}
+        </div>
+        <Toaster position="top-right" richColors />
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

@@ -49,7 +49,6 @@ export async function PUT(
     const body = await request.json();
     const { parentId, name, orderNum, leader, phone, email, status } = body;
 
-    // 计算 ancestors
     let ancestors = "";
     if (parentId) {
       const parent = await prisma.department.findUnique({

@@ -38,11 +38,9 @@ export default function Header() {
   };
 
   return (
-    <header className="border-b bg-card">
-      <div className="flex items-center justify-between px-6 py-4">
-        <h1 className="text-xl font-semibold">审批管理系统</h1>
+    <div className="flex items-center justify-between w-full">
 
-        <DropdownMenu>
+      <DropdownMenu>
           <DropdownMenuTrigger className="outline-none">
             <Avatar className="h-10 w-10 cursor-pointer hover:ring-2 hover:ring-primary transition-all">
               <AvatarImage src={user.image || undefined} />
@@ -90,7 +88,6 @@ export default function Header() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
-    </header>
+    </div>
   );
 }
