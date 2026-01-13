@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import Link from "next/link"
 import { signUp } from "@/lib/auth-clients"
 
@@ -38,6 +39,7 @@ export default function SignUpPage() {
     if (formValues.error) {
       setError(formValues.error.message || "注册失败");
     } else {
+      toast.success("注册成功，请登录");
       router.push("/sign-in");
     }
   };

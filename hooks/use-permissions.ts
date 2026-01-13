@@ -61,21 +61,17 @@ export function usePermissions() {
     isApprover,
     isAdmin,
     hasPermission,
-    // 申请权限
     canCreateApplication,
     canViewOwnApplications,
     canEditOwnApplication,
     canDeleteOwnApplication,
     canViewAllApplications,
-    // 审批权限
     canApprove,
     canReject,
     canViewAssignedApprovals,
     canViewAllApprovals,
-    // 流程权限
     canManageProcesses,
     canViewProcesses,
-    // 用户管理
     canManageUsers,
   };
 }

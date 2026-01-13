@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { usePermissions } from "@/hooks/usePermissions";
+import { toast } from "sonner";
+import { usePermissions } from "@/hooks/use-permissions";
 import { authClient } from "@/lib/auth-clients";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -80,7 +81,7 @@ export default function UsersPage() {
       await fetchUsers();
     } catch (error) {
       console.error("Failed to update role:", error);
-      alert("更新角色失败");
+      toast.error("更新角色失败");
     }
   };
 
@@ -98,7 +99,7 @@ export default function UsersPage() {
       await fetchUsers();
     } catch (error) {
       console.error("Failed to ban/unban user:", error);
-      alert("操作失败");
+      toast.error("操作失败");
     }
   };
 
@@ -177,15 +178,24 @@ export default function UsersPage() {
                   {new Date(u.createdAt).toLocaleDateString("zh-CN")}
                 </TableCell>
                 <TableCell className="text-center">
-                  {u.id !== user?.id && (
+                  <div className="flex justify-center gap-2">
                     <Button
-                      onClick={() => handleBanUser(u.id, u.banned)}
-                      variant={u.banned ? "default" : "destructive"}
+                      onClick={() => router.push(`/admin/users/${u.id}`)}
+                      variant="outline"
                       size="sm"
                     >
-                      {u.banned ? "启用" : "禁用"}
+                      编辑
                     </Button>
-                  )}
+                    {u.id !== user?.id && (
+                      <Button
+                        onClick={() => handleBanUser(u.id, u.banned)}
+                        variant={u.banned ? "default" : "destructive"}
+                        size="sm"
+                      >
+                        {u.banned ? "启用" : "禁用"}
+                      </Button>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

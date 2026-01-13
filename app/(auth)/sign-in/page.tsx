@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { signIn } from "@/lib/auth-clients"
 import Link from "next/link"
 
@@ -27,6 +28,7 @@ export default function SignInPage() {
     if (res.error) {
       setError(res.error.message || "登录失败");
     } else {
+      toast.success("登录成功");
       router.push("/dashboard");
     }
   };

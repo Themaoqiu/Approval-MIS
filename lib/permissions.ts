@@ -3,6 +3,7 @@ import { defaultStatements, adminAc } from "better-auth/plugins/admin/access"
 
 export const statement = {
   ...defaultStatements,
+  ...adminAc.statements,
   application: ["create", "view", "update", "delete", "withdraw"],
   approval: ["view", "approve", "reject", "comment"],
   process: ["create", "update", "delete", "view"],

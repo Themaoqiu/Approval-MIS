@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { usePermissions } from "@/hooks/usePermissions";
+import { usePermissions } from "@/hooks/use-permissions";
 import { Separator } from "@/components/ui/separator";
 
 export default function Sidebar() {
@@ -11,18 +11,18 @@ export default function Sidebar() {
 
   const baseNavItems = [
     { name: "仪表板", href: "/dashboard" },
-    { name: "我的申请", href: "/dashboard/applications" },
+    { name: "新建申请", href: "/applications/new" },
+    { name: "我的申请", href: "/applications/my" },
   ];
 
   const approverNavItems = [
-    { name: "待审批", href: "/dashboard/tasks" },
-    { name: "已处理", href: "/dashboard/approvals" },
+    { name: "审批", href: "/approvals/tasks" },
   ];
 
   const adminNavItems = [
-    { name: "用户管理", href: "/dashboard/admin/users" },
-    { name: "流程管理", href: "/dashboard/admin/processes" },
-    { name: "统计报表", href: "/dashboard/statistics" },
+    { name: "用户管理", href: "/admin/users" },
+    { name: "部门管理", href: "/admin/departments" },
+    { name: "所有申请", href: "/admin/applications" },
   ];
 
   return (

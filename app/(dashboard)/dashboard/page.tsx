@@ -1,10 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useSession, signOut } from "@/lib/auth-clients";
+import { useSession } from "@/lib/auth-clients";
 import { useEffect, useState } from "react";
-import { usePermissions } from "@/hooks/usePermissions";
-import { Button } from "@/components/ui/button";
+import { usePermissions } from "@/hooks/use-permissions";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -79,21 +78,7 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">仪表板</h1>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <p className="text-sm font-medium">{user.name}</p>
-            <p className="text-xs text-muted-foreground">{user.email}</p>
-          </div>
-          <Button
-            onClick={() => signOut()}
-            variant="destructive"
-          >
-            登出
-          </Button>
-        </div>
-      </div>
+      <h1 className="text-3xl font-bold mb-6">仪表板</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card className="p-6">
