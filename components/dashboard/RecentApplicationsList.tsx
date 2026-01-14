@@ -39,7 +39,7 @@ export function RecentApplicationsList({
   };
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
       <h2 className="text-xl font-semibold mb-4">
         {isAdmin ? "最近的申请（全部）" : "最近的申请"}
       </h2>

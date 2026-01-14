@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { DepartmentsTable } from "@/components/admin/DepartmentsTable";
 import { DepartmentDialog } from "@/components/admin/DepartmentDialog";
+import { Plus } from "lucide-react";
 
 interface Department {
   deptId: number;
@@ -101,6 +102,7 @@ export default function DepartmentsPage() {
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => handleOpenDialog()}>
+              <Plus className="h-4 w-4 mr-2" />
               新增部门
             </Button>
           </DialogTrigger>

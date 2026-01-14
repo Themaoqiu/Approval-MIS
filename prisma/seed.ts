@@ -1,5 +1,4 @@
 import prisma from "../lib/prisma";
-import bcrypt from "bcrypt";
 
 async function main() {
   console.log("🌱 开始数据库初始化...");
@@ -48,71 +47,7 @@ async function main() {
     }
   }
 
-  // 3. 创建测试用户
-  console.log("\n👥 初始化测试用户...");
-  
-  const aiDept = await prisma.department.findFirst({ where: { name: "人工智能学部" } });
-  const econDept = await prisma.department.findFirst({ where: { name: "经济与管理学院" } });
-  const electricDept = await prisma.department.findFirst({ where: { name: "电气工程学部" } });
-
-  // 加密密码
-  const hashedPassword = await bcrypt.hash("12345", 10);
-
-  const users = [
-    {
-      id: "9Qu4tyHcZoOOMI82f5g0OF96k0qtVqs7",
-      username: "test1",
-      nickname: "test1",
-      email: "test1@gmail.com",
-      role: "admin",
-      deptId: electricDept?.deptId || 5,
-      sex: "0",
-      status: "0",
-      delFlag: "0",
-      password: hashedPassword,
-      emailVerified: false,
-    },
-    {
-      id: "x7w5CpzV41HwhQuJ2M9Q7lCzuCVsB4P7",
-      username: "test2",
-      nickname: "test2",
-      email: "test2@gmail.com",
-      role: "approver",
-      deptId: econDept?.deptId || 3,
-      sex: "2",
-      status: "0",
-      delFlag: "0",
-      password: hashedPassword,
-      emailVerified: false,
-    },
-    {
-      id: "yIvWUN3yU1l3UpufjtbwydosVHdnfotp",
-      username: "test3",
-      nickname: "test3",
-      email: "test3@gmail.com",
-      role: "user",
-      deptId: econDept?.deptId || 3,
-      sex: "2",
-      status: "0",
-      delFlag: "0",
-      password: hashedPassword,
-      emailVerified: false,
-    },
-  ];
-
-  for (const user of users) {
-    const existing = await prisma.user.findFirst({
-      where: { username: user.username }
-    });
-    if (!existing) {
-      await prisma.user.create({ data: user });
-      console.log(`  ✅ 创建用户: ${user.nickname} (${user.username}) - 角色: ${user.role}`);
-    } else {
-      console.log(`  ⏭️  用户已存在: ${user.username}`);
-    }
-  }
-
-  // 4. 创建审批流程
+  // 3. 创建审批流程
   console.log("\n📋 初始化审批流程...");
   const processes = [
     {
@@ -139,23 +74,64 @@ async function main() {
     }
   ];
 
+  const createdProcesses = [];
   for (const process of processes) {
     const existing = await prisma.approvalProcess.findFirst({
       where: { type: process.type }
     });
     if (!existing) {
-      await prisma.approvalProcess.create({ data: process });
+      const created = await prisma.approvalProcess.create({ data: process });
+      createdProcesses.push(created);
       console.log(`  ✅ 创建审批流程: ${process.name} (type: ${process.type})`);
     } else {
+      createdProcesses.push(existing);
       console.log(`  ⏭️  审批流程已存在: ${process.name}`);
     }
   }
 
+  // 4. 创建示例审批规则
+  console.log("\n⚙️  初始化审批规则...");
+  
+  // 获取部门和岗位
+  const aiDept = await prisma.department.findFirst({ where: { name: "人工智能学部" } });
+  const headTeacherPost = await prisma.post.findFirst({ where: { code: "HEAD_TEACHER" } });
+  
+  if (aiDept && headTeacherPost && createdProcesses.length > 0) {
+    const leaveProcess = createdProcesses.find(p => p.type === "leave");
+    
+    const existingRule = await prisma.approvalRule.findFirst({
+      where: {
+        processId: leaveProcess?.processId,
+        name: "AI学部请假规则"
+      }
+    });
+    
+    if (!existingRule && leaveProcess) {
+      await prisma.approvalRule.create({
+        data: {
+          processId: leaveProcess.processId,
+          name: "AI学部请假规则",
+          description: "人工智能学部学生请假申请,需要提交给对应辅导员审批",
+          applicantDeptId: aiDept.deptId,
+          approverPostId: headTeacherPost.postId,
+          approvalMode: "sequential",
+          priority: 10,
+          isActive: true,
+        }
+      });
+      console.log(`  ✅ 创建审批规则: AI学部请假规则`);
+    } else {
+      console.log(`  ⏭️  审批规则已存在: AI学部请假规则`);
+    }
+  }
+
   console.log("\n✨ 数据库初始化完成!");
-  console.log("\n📝 测试账号信息:");
-  console.log("  test1 (管理员): test1@gmail.com | 密码: 12345");
-  console.log("  test2 (审批人): test2@gmail.com | 密码: 12345");
-  console.log("  test3 (普通员工): test3@gmail.com | 密码: 12345");
+  console.log("\n📝 提示:");
+  console.log("  - 部门和岗位数据已初始化");
+  console.log("  - 审批流程已创建");
+  console.log("  - 示例审批规则已创建");
+  console.log("  - 请登录系统后在'审批规则'页面配置更多规则");
+  console.log("  - 例如: 为其他部门添加审批规则,指定不同岗位的审批人");
 }
 
 main()

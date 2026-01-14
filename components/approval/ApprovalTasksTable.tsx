@@ -10,6 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ClipboardCheck, Eye, ClipboardList } from "lucide-react";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 
 interface ApprovalTask {
   taskid: number;
@@ -46,6 +48,16 @@ export function ApprovalTasksTable({
 
   return loading ? (
     <p className="text-center py-8 text-muted-foreground">加载中...</p>
+  ) : tasks.length === 0 ? (
+    <Empty>
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <ClipboardList className="h-8 w-8" />
+        </EmptyMedia>
+        <EmptyTitle>暂无待办任务</EmptyTitle>
+        <EmptyDescription>当前没有需要处理的审批任务</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
   ) : (
     <Table>
       <TableHeader>
@@ -58,39 +70,37 @@ export function ApprovalTasksTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {tasks.length === 0 ? (
-          <TableRow>
-            <TableCell colSpan={5} className="text-center text-muted-foreground">
-              暂无任务
+        {tasks.map((task) => (
+          <TableRow key={task.taskid}>
+            <TableCell className="text-center">
+              {task.application.title}
+            </TableCell>
+            <TableCell className="text-center">
+              {getTypeLabel(task.application.type)}
+            </TableCell>
+            <TableCell className="text-center">
+              {task.application.applicant.nickname ||
+                task.application.applicant.username}
+            </TableCell>
+            <TableCell className="text-center">
+              {new Date(task.createdAt).toLocaleString("zh-CN")}
+            </TableCell>
+            <TableCell className="text-center">
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => router.push(`/approvals/tasks/${task.taskid}`)}
+                title={task.status === "pending" ? "处理任务" : "查看详情"}
+              >
+                {task.status === "pending" ? (
+                  <ClipboardCheck className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </Button>
             </TableCell>
           </TableRow>
-        ) : (
-          tasks.map((task) => (
-            <TableRow key={task.taskid}>
-              <TableCell className="text-center">
-                {task.application.title}
-              </TableCell>
-              <TableCell className="text-center">
-                {getTypeLabel(task.application.type)}
-              </TableCell>
-              <TableCell className="text-center">
-                {task.application.applicant.nickname ||
-                  task.application.applicant.username}
-              </TableCell>
-              <TableCell className="text-center">
-                {new Date(task.createdAt).toLocaleString("zh-CN")}
-              </TableCell>
-              <TableCell className="text-center">
-                <Button
-                  size="sm"
-                  onClick={() => router.push(`/approvals/tasks/${task.taskid}`)}
-                >
-                  {task.status === "pending" ? "处理" : "查看"}
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))
-        )}
+        ))}
       </TableBody>
     </Table>
   );

@@ -124,6 +124,37 @@ model ApprovalProcess {
   updatedAt DateTime @updatedAt
 
   applications Application[]
+  rules        ApprovalRule[]
+}
+
+model ApprovalRule {
+  ruleId      Int              @id @default(autoincrement())
+  processId   Int
+  process     ApprovalProcess  @relation(fields: [processId], references: [processId], onDelete: Cascade)
+  name        String           @db.VarChar(100)
+  description String?          @db.VarChar(500)
+  
+  // 适用条件
+  applicantDeptId Int?         // 申请人所属部门(null表示不限)
+  applicantPostId Int?         // 申请人所属岗位(null表示不限)
+  
+  // 审批人筛选条件
+  approverDeptId  Int?         // 审批人必须属于的部门(null表示不限)
+  approverPostId  Int?         // 审批人必须属于的岗位(null表示不限)
+  specificUserIds String?      @db.Text // JSON数组,指定具体审批人ID列表
+  
+  // 审批模式
+  approvalMode    String       @default("sequential") @db.VarChar(20) // sequential(顺序), countersign(会签), or-sign(或签)
+  
+  priority        Int          @default(0)  // 优先级,数字越大优先级越高
+  isActive        Boolean      @default(true)
+  createdBy       String?      @db.VarChar(64)
+  createdAt       DateTime     @default(now())
+  updatedBy       String?      @db.VarChar(64)
+  updatedAt       DateTime     @updatedAt
+
+  @@index([processId, isActive])
+  @@index([applicantDeptId, applicantPostId])
 }
 
 model ApprovalTask {

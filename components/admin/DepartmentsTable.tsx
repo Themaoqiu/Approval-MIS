@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface Department {
   deptId: number;
@@ -40,7 +41,7 @@ export function DepartmentsTable({
   onDelete,
 }: DepartmentsTableProps) {
   return (
-    <Card>
+    <Card className="p-0 border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -97,21 +98,23 @@ export function DepartmentsTable({
               <TableCell className="text-center">
                 <div className="flex justify-center gap-2">
                   <Button
-                    size="sm"
-                    variant="outline"
+                    size="icon"
+                    variant="ghost"
                     onClick={() => onEdit(dept)}
+                    title="编辑"
                   >
-                    编辑
+                    <Pencil className="h-4 w-4" />
                   </Button>
                   <Button
-                    size="sm"
-                    variant="destructive"
+                    size="icon"
+                    variant="ghost"
                     onClick={() => onDelete(dept.deptId)}
                     disabled={
                       dept._count.users > 0 || dept._count.children > 0
                     }
+                    title="删除"
                   >
-                    删除
+                    <Trash2 className="h-4 w-4 text-red-600" />
                   </Button>
                 </div>
               </TableCell>

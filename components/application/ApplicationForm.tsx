@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Field,
   FieldGroup,
@@ -29,15 +30,38 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Users } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { type DateRange } from "react-day-picker";
+import { ApproverSelector } from "@/components/approver-selector/ApproverSelector";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "../ui/separator";
+
+interface ApprovalRule {
+  ruleId: number;
+  name: string;
+  approvalMode: string;
+}
+
+interface Approver {
+  id: string;
+  name: string;
+  username: string;
+  email: string;
+  dept?: string;
+  deptId?: number;
+  posts?: string[];
+}
 
 export function ApplicationForm() {
   const router = useRouter();
   const [type, setType] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [showApproverSelector, setShowApproverSelector] = useState(false);
+  const [selectedApproverIds, setSelectedApproverIds] = useState<string[]>([]);
+  const [availableApprovers, setAvailableApprovers] = useState<Approver[]>([]);
+  const [currentRule, setCurrentRule] = useState<ApprovalRule | null>(null);
 
   const [leaveData, setLeaveData] = useState({
     leaveType: "",
@@ -54,6 +78,54 @@ export function ApplicationForm() {
   const days = leaveData.dateRange?.from && leaveData.dateRange?.to
     ? differenceInDays(leaveData.dateRange.to, leaveData.dateRange.from) + 1
     : 0;
+
+  // 当申请类型改变时,获取适用的审批规则和审批人列表
+  useEffect(() => {
+    if (type) {
+      fetchApprovalRule();
+    } else {
+      setCurrentRule(null);
+      setAvailableApprovers([]);
+      setSelectedApproverIds([]);
+    }
+  }, [type]);
+
+  const fetchApprovalRule = async () => {
+    try {
+      const res = await fetch(`/api/approvers/rules?type=${type}`);
+      const data = await res.json();
+
+      if (res.ok && data.rule) {
+        setCurrentRule(data.rule);
+        setAvailableApprovers(data.approvers || []);
+        if (data.approvers?.length === 1) {
+          setSelectedApproverIds([data.approvers[0].id]);
+        } else {
+          setSelectedApproverIds([]);
+        }
+      } else {
+        toast.error(data.message || "未找到适用的审批规则");
+        setCurrentRule(null);
+        setAvailableApprovers([]);
+      }
+    } catch (error) {
+      console.error("获取审批规则失败:", error);
+      toast.error("获取审批规则失败");
+    }
+  };
+
+  const getApprovalModeText = (mode: string) => {
+    switch (mode) {
+      case "sequential":
+        return "顺序审批";
+      case "countersign":
+        return "会签(全部同意)";
+      case "or-sign":
+        return "或签(一人同意)";
+      default:
+        return mode;
+    }
+  };
 
   const handleSubmit = async () => {
     let title = "";
@@ -88,12 +160,23 @@ export function ApplicationForm() {
       return;
     }
 
+    if (selectedApproverIds.length === 0) {
+      toast.error("请选择审批人");
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch("/api/applications/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, title, content })
+        body: JSON.stringify({ 
+          type, 
+          title, 
+          content,
+          approverIds: selectedApproverIds,
+          approvalMode: currentRule?.approvalMode || "sequential"
+        })
       });
 
       if (res.ok) {
@@ -110,16 +193,19 @@ export function ApplicationForm() {
     }
   };
 
+  const selectedApprovers = availableApprovers.filter(a => selectedApproverIds.includes(a.id));
+
   return (
     <Card className="p-6">
-      <h2 className="text-2xl font-bold mb-6">新建申请</h2>
+      <h2 className="text-2xl font-bold">新建申请</h2>
+      <Separator />
       <form>
         <FieldGroup>
           <div className="grid grid-cols-2 gap-4">
             <Field>
               <FieldLabel htmlFor="type">申请类型</FieldLabel>
               <Select value={type} onValueChange={setType}>
-                <SelectTrigger id="type">
+                <SelectTrigger id="type" className="max-w-xs">
                   <SelectValue placeholder="选择申请类型" />
                 </SelectTrigger>
                 <SelectContent>
@@ -142,7 +228,7 @@ export function ApplicationForm() {
                       value={leaveData.leaveType}
                       onValueChange={(v) => setLeaveData({ ...leaveData, leaveType: v })}
                     >
-                      <SelectTrigger id="leaveType">
+                      <SelectTrigger id="leaveType" className="max-w-xs">
                         <SelectValue placeholder="选择请假类型" />
                       </SelectTrigger>
                       <SelectContent>
@@ -158,7 +244,7 @@ export function ApplicationForm() {
                     <FieldLabel>请假日期</FieldLabel>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start">
+                        <Button variant="outline" className="max-w-xs justify-start">
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {leaveData.dateRange?.from ? (
                             leaveData.dateRange.to ? (
@@ -260,8 +346,62 @@ export function ApplicationForm() {
             </FieldSet>
           )}
 
+          {type && currentRule && (
+            <FieldSet>
+              <FieldLegend>审批人选择</FieldLegend>
+              <FieldSeparator />
+              <FieldGroup>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                    <div>
+                      <div className="font-medium">{currentRule.name}</div>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        审批模式: {getApprovalModeText(currentRule.approvalMode)}
+                      </div>
+                      {availableApprovers.length > 0 && (
+                        <div className="text-sm text-muted-foreground mt-1">
+                          可选审批人: {availableApprovers.length} 人
+                        </div>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowApproverSelector(true)}
+                      disabled={availableApprovers.length === 0}
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      选择审批人
+                    </Button>
+                  </div>
+
+                  {selectedApproverIds.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">
+                        已选审批人 ({selectedApproverIds.length}人)
+                      </Label>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedApprovers.map((approver) => (
+                          <Badge key={approver.id} variant="secondary">
+                            {approver.name} ({approver.dept || "无部门"})
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {availableApprovers.length === 0 && (
+                    <div className="text-sm text-muted-foreground text-center p-4 bg-yellow-50 border border-yellow-200 rounded">
+                      未找到符合条件的审批人,请联系管理员配置审批规则
+                    </div>
+                  )}
+                </div>
+              </FieldGroup>
+            </FieldSet>
+          )}
+
           <div className="flex gap-2">
-            <Button type="button" onClick={handleSubmit} disabled={loading || !type}>
+            <Button type="button" onClick={handleSubmit} disabled={loading || !type || selectedApproverIds.length === 0}>
               {loading ? "提交中..." : "提交申请"}
             </Button>
             <Button type="button" variant="outline" onClick={() => router.back()}>
@@ -270,6 +410,15 @@ export function ApplicationForm() {
           </div>
         </FieldGroup>
       </form>
+
+      <ApproverSelector
+        open={showApproverSelector}
+        onOpenChange={setShowApproverSelector}
+        selectedUserIds={selectedApproverIds}
+        onConfirm={setSelectedApproverIds}
+        mode={currentRule?.approvalMode === "sequential" ? "single" : "multiple"}
+        filterUserIds={availableApprovers.map(a => a.id)}
+      />
     </Card>
   );
 }

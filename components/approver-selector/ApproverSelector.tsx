@@ -28,6 +28,7 @@ interface ApproverSelectorProps {
   selectedUserIds: string[];
   onConfirm: (userIds: string[]) => void;
   mode?: "single" | "multiple";
+  filterUserIds?: string[];
 }
 
 export function ApproverSelector({
@@ -36,6 +37,7 @@ export function ApproverSelector({
   selectedUserIds,
   onConfirm,
   mode = "multiple",
+  filterUserIds,
 }: ApproverSelectorProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState<User[]>([]);
@@ -87,6 +89,11 @@ export function ApproverSelector({
       const postData = await postUsers.json();
       const postUserIds = postData.userPosts?.map((up: any) => up.userId) || [];
       filteredUsers = filteredUsers.filter((u: User) => postUserIds.includes(u.id));
+    }
+
+    // 如果提供了过滤用户ID列表,只显示这些用户
+    if (filterUserIds && filterUserIds.length > 0) {
+      filteredUsers = filteredUsers.filter((u: User) => filterUserIds.includes(u.id));
     }
 
     setUsers(filteredUsers);
@@ -206,21 +213,27 @@ export function ApproverSelector({
               <div className="grid grid-cols-4 gap-4 h-96">
                 <ScrollArea className="col-span-1 border rounded-lg p-2">
                   <div className="space-y-1">
-                    {departments.map((dept) => (
-                      <Button
-                        key={dept.deptId}
-                        variant={selectedDeptId === dept.deptId ? "secondary" : "ghost"}
-                        className="w-full justify-start"
-                        onClick={() => setSelectedDeptId(dept.deptId)}
-                      >
-                        {dept.name}
-                      </Button>
-                    ))}
+                    {departments.length === 0 ? (
+                      <div className="text-center py-4 text-sm text-muted-foreground">暂无部门</div>
+                    ) : (
+                      departments.map((dept) => (
+                        <Button
+                          key={dept.deptId}
+                          variant={selectedDeptId === dept.deptId ? "secondary" : "ghost"}
+                          className="w-full justify-start"
+                          onClick={() => setSelectedDeptId(dept.deptId)}
+                        >
+                          {dept.name}
+                        </Button>
+                      ))
+                    )}
                   </div>
                 </ScrollArea>
                 <ScrollArea className="col-span-3">
-                  {users.length === 0 ? (
+                  {!selectedDeptId ? (
                     <div className="text-center py-8 text-muted-foreground">请选择部门</div>
+                  ) : users.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">该部门暂无用户</div>
                   ) : (
                     <div className="space-y-2">
                       {users.map((user) => (
@@ -249,21 +262,27 @@ export function ApproverSelector({
               <div className="grid grid-cols-4 gap-4 h-96">
                 <ScrollArea className="col-span-1 border rounded-lg p-2">
                   <div className="space-y-1">
-                    {posts.map((post) => (
-                      <Button
-                        key={post.postId}
-                        variant={selectedPostId === post.postId ? "secondary" : "ghost"}
-                        className="w-full justify-start"
-                        onClick={() => setSelectedPostId(post.postId)}
-                      >
-                        {post.name}
-                      </Button>
-                    ))}
+                    {posts.length === 0 ? (
+                      <div className="text-center py-4 text-sm text-muted-foreground">暂无岗位</div>
+                    ) : (
+                      posts.map((post) => (
+                        <Button
+                          key={post.postId}
+                          variant={selectedPostId === post.postId ? "secondary" : "ghost"}
+                          className="w-full justify-start"
+                          onClick={() => setSelectedPostId(post.postId)}
+                        >
+                          {post.name}
+                        </Button>
+                      ))
+                    )}
                   </div>
                 </ScrollArea>
                 <ScrollArea className="col-span-3">
-                  {users.length === 0 ? (
+                  {!selectedPostId ? (
                     <div className="text-center py-8 text-muted-foreground">请选择岗位</div>
+                  ) : users.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">该岗位暂无用户</div>
                   ) : (
                     <div className="space-y-2">
                       {users.map((user) => (

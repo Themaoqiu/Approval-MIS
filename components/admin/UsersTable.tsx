@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-clients";
+import { Pencil, Ban, CheckCircle } from "lucide-react";
 
 interface User {
   id: string;
@@ -148,20 +149,25 @@ export function UsersTable({
                 <div className="flex justify-center gap-2">
                   <Button
                     onClick={() => onEdit(u.id)}
-                    variant="outline"
-                    size="sm"
+                    variant="ghost"
+                    size="icon"
+                    title="编辑"
                   >
-                    编辑
+                    <Pencil className="h-4 w-4" />
                   </Button>
-                  {u.id !== currentUserId && (
-                    <Button
-                      onClick={() => handleBanUser(u.id, u.banned)}
-                      variant={u.banned ? "default" : "destructive"}
-                      size="sm"
-                    >
-                      {u.banned ? "启用" : "禁用"}
-                    </Button>
-                  )}
+                  <Button
+                    onClick={() => handleBanUser(u.id, u.banned)}
+                    variant="ghost"
+                    size="icon"
+                    disabled={u.id === currentUserId}
+                    title={u.banned ? "启用" : "禁用"}
+                  >
+                    {u.banned ? (
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <Ban className="h-4 w-4 text-red-600" />
+                    )}
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>

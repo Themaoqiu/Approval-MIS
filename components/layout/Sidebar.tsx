@@ -15,6 +15,7 @@ import {
   Briefcase,
   BarChart3,
   FileEdit,
+  Settings,
 } from "lucide-react";
 import {
   Sidebar,
@@ -34,6 +35,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Badge } from "@/components/ui/badge";
 
 export default function AppSidebar() {
   const pathname = usePathname();
@@ -60,6 +62,7 @@ export default function AppSidebar() {
   const adminTopLevelNavItems = [
     { name: "所有申请", href: "/admin/applications", icon: FolderKanban },
     { name: "表单设计", href: "/admin/forms", icon: FileEdit },
+    { name: "审批规则", href: "/admin/approval-rules", icon: CheckSquare },
   ];
 
   const adminSystemNavItems = [
@@ -80,11 +83,18 @@ export default function AppSidebar() {
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <Home className="size-4" />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">审批管理系统</span>
-                  <span className="truncate text-xs">
-                    {isAdmin ? "管理员" : isApprover ? "审批员" : "用户"}
-                  </span>
+                <div className="flex flex-1 items-center justify-between gap-2">
+                  <span className="truncate font-semibold text-sm">审批管理系统</span>
+                  {isAdmin && (
+                    <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white border-0 shrink-0">
+                      管理员
+                    </Badge>
+                  )}
+                  {!isAdmin && isApprover && (
+                    <Badge className="bg-green-500 hover:bg-green-600 text-white border-0 shrink-0">
+                      审批员
+                    </Badge>
+                  )}
                 </div>
               </Link>
             </SidebarMenuButton>

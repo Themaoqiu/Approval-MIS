@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, FileEdit } from "lucide-react";
 import { toast } from "sonner";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
+import { Separator } from "@/components/ui/separator";
 
 export default function FormsPage() {
   const router = useRouter();
@@ -49,62 +51,76 @@ export default function FormsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">表单管理</h1>
+        <h1 className="text-3xl font-bold">表单设计</h1>
         <Button onClick={() => router.push("/admin/forms/new")}>
           <Plus className="h-4 w-4 mr-2" />
           新建表单
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>表单列表</CardTitle>
-        </CardHeader>
+      <Card className="p-0">
         <CardContent>
           {loading ? (
             <div className="text-center py-8">加载中...</div>
+          ) : forms.length === 0 ? (
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <FileEdit className="h-8 w-8" />
+                </EmptyMedia>
+                <EmptyTitle>暂无表单模板</EmptyTitle>
+                <EmptyDescription>还没有创建任何表单模板，点击下方按钮开始创建</EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button onClick={() => router.push("/admin/forms/new")}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  创建表单
+                </Button>
+              </EmptyContent>
+            </Empty>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>表单名称</TableHead>
-                  <TableHead>编码</TableHead>
-                  <TableHead>分类</TableHead>
-                  <TableHead>版本</TableHead>
-                  <TableHead>状态</TableHead>
-                  <TableHead>创建时间</TableHead>
+                  <TableHead className="text-center">表单名称</TableHead>
+                  <TableHead className="text-center">编码</TableHead>
+                  <TableHead className="text-center">分类</TableHead>
+                  <TableHead className="text-center">版本</TableHead>
+                  <TableHead className="text-center">状态</TableHead>
+                  <TableHead className="text-center">创建时间</TableHead>
                   <TableHead className="text-center">操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {forms.map((form) => (
                   <TableRow key={form.formId}>
-                    <TableCell className="font-medium">{form.name}</TableCell>
-                    <TableCell>
+                    <TableCell className="text-center font-medium">{form.name}</TableCell>
+                    <TableCell className="text-center">
                       <code className="text-sm">{form.code}</code>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       {form.category === "leave"
                         ? "请假"
                         : form.category === "expense"
                         ? "报销"
                         : "自定义"}
                     </TableCell>
-                    <TableCell>v{form.version}</TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">v{form.version}</TableCell>
+                    <TableCell className="text-center">
                       <Badge variant={form.isActive ? "default" : "secondary"}>
                         {form.isActive ? "启用" : "停用"}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       {new Date(form.createdAt).toLocaleDateString()}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <div className="flex justify-center gap-2">
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => router.push(`/admin/forms/${form.formId}/edit`)}
+                          title="编辑"
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -113,8 +129,9 @@ export default function FormsPage() {
                           size="icon"
                           onClick={() => handleDelete(form.formId, form.isSystem)}
                           disabled={form.isSystem}
+                          title="删除"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4 text-red-600" />
                         </Button>
                       </div>
                     </TableCell>

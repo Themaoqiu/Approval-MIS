@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -10,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface Post {
   postId: number;
@@ -31,7 +33,7 @@ interface PostsTableProps {
 
 export function PostsTable({ posts, onEdit, onDelete }: PostsTableProps) {
   return (
-    <div className="rounded-md border">
+    <Card className="p-0 border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -69,20 +71,23 @@ export function PostsTable({ posts, onEdit, onDelete }: PostsTableProps) {
                 </TableCell>
                 <TableCell className="text-center">{post._count?.userPosts || 0}</TableCell>
                 <TableCell className="text-center">
-                  <div className="flex gap-1 justify-center">
+                  <div className="flex gap-2 justify-center">
                     <Button
-                      variant="outline"
-                      size="sm"
+                      variant="ghost"
+                      size="icon"
                       onClick={() => onEdit(post)}
+                      title="编辑"
                     >
-                      编辑
+                      <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
-                      variant="destructive"
-                      size="sm"
+                      variant="ghost"
+                      size="icon"
                       onClick={() => onDelete(post.postId)}
+                      disabled={(post._count?.userPosts || 0) > 0}
+                      title="删除"
                     >
-                      删除
+                      <Trash2 className="h-4 w-4 text-red-600" />
                     </Button>
                   </div>
                 </TableCell>
@@ -91,6 +96,6 @@ export function PostsTable({ posts, onEdit, onDelete }: PostsTableProps) {
           )}
         </TableBody>
       </Table>
-    </div>
+    </Card>
   );
 }
