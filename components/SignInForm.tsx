@@ -29,7 +29,6 @@ export default function SignInForm() {
       setError(res.error.message || "登录失败");
     } else {
       toast.success("登录成功");
-      // 使用 replace 而不是 push，防止后退
       router.replace("/dashboard");
     }
   };

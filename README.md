@@ -40,6 +40,9 @@ bun install
 
 # Apply migrations and seed database automatically
 bunx prisma migrate dev --name init
+
+# Insert test data
+bunx tsx prisma/seed.ts
 ```
 
 2. Start development server:
