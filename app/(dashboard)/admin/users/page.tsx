@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePermissions } from "@/hooks/use-permissions";
-import { authClient } from "@/lib/auth-clients";
 import { UsersTable } from "@/components/admin/UsersTable";
 import { UserDialog } from "@/components/admin/UserDialog";
 
@@ -13,6 +12,7 @@ interface User {
   nickname: string | null;
   email: string;
   role: string;
+  status: string;
   banned: boolean;
   createdAt: string;
 }
@@ -55,14 +55,12 @@ export default function UsersPage() {
   }, [user, isAdmin, router]);
 
   const fetchUsers = async () => {
+    setLoading(true);
     try {
-      const result = await authClient.admin.listUsers({
-        query: {
-          limit: 100,
-        },
-      });
-      if (result.data) {
-        setUsers(result.data.users as User[]);
+      const res = await fetch("/api/admin/users");
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data.users || []);
       }
     } catch (error) {
       console.error("Failed to fetch users:", error);

@@ -241,7 +241,9 @@ export function DepartmentDialog({
             </Field>
 
             <Field orientation="horizontal">
-              <Button type="submit">{department ? "更新" : "创建"}</Button>
+              <Button type="submit">
+                {department ? "更新" : "创建"}
+              </Button>
               <Button
                 type="button"
                 variant="outline"

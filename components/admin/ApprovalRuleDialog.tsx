@@ -34,8 +34,9 @@ interface ApprovalRule {
 
 interface ApprovalRuleDialogProps {
   open: boolean;
-  onOpenChange: (open: boolean, success?: boolean) => void;
-  rule?: ApprovalRule;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
+  rule?: ApprovalRule | null;
 }
 
 interface Process {
@@ -54,7 +55,7 @@ interface Post {
   name: string;
 }
 
-export function ApprovalRuleDialog({ open, onOpenChange, rule }: ApprovalRuleDialogProps) {
+export function ApprovalRuleDialog({ open, onOpenChange, onSuccess, rule }: ApprovalRuleDialogProps) {
   const [loading, setLoading] = useState(false);
   const [processes, setProcesses] = useState<Process[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -122,13 +123,13 @@ export function ApprovalRuleDialog({ open, onOpenChange, rule }: ApprovalRuleDia
   const fetchDepartments = async () => {
     const res = await fetch("/api/admin/departments");
     const data = await res.json();
-    setDepartments(data);
+    setDepartments(Array.isArray(data) ? data : data.departments || []);
   };
 
   const fetchPosts = async () => {
     const res = await fetch("/api/admin/posts");
     const data = await res.json();
-    setPosts(data);
+    setPosts(Array.isArray(data) ? data : data.posts || []);
   };
 
   const handleSubmit = async () => {
@@ -166,7 +167,8 @@ export function ApprovalRuleDialog({ open, onOpenChange, rule }: ApprovalRuleDia
 
       if (res.ok) {
         toast.success(rule ? "更新成功" : "创建成功");
-        onOpenChange(false, true);
+        onOpenChange(false);
+        onSuccess?.();
       } else {
         const error = await res.json();
         toast.error(error.error || "操作失败");
@@ -180,7 +182,7 @@ export function ApprovalRuleDialog({ open, onOpenChange, rule }: ApprovalRuleDia
 
   return (
     <>
-      <Dialog open={open} onOpenChange={() => onOpenChange(false)}>
+  <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{rule ? "编辑审批规则" : "新建审批规则"}</DialogTitle>

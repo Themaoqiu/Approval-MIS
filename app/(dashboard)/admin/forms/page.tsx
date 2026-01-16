@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, FileEdit } from "lucide-react";
 import { toast } from "sonner";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
-import { Separator } from "@/components/ui/separator";
 
 export default function FormsPage() {
   const router = useRouter();
@@ -32,7 +31,7 @@ export default function FormsPage() {
     if (isSystem) {
       toast.error("系统表单不能删除");
       return;
-    }
+    };
 
     if (!confirm("确定要删除此表单吗?")) return;
 

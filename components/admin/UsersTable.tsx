@@ -29,6 +29,7 @@ interface User {
   email: string;
   role: string;
   banned: boolean;
+  status: string;
   createdAt: string;
 }
 
@@ -62,12 +63,12 @@ export function UsersTable({
   const handleBanUser = async (userId: string, banned: boolean) => {
     try {
       if (banned) {
-        await authClient.admin.unbanUser({ userId });
-      } else {
         await authClient.admin.banUser({
           userId,
           banReason: "管理员操作",
         });
+      } else {
+        await authClient.admin.unbanUser({ userId });
       }
       await onRefresh();
     } catch (error) {
@@ -132,9 +133,9 @@ export function UsersTable({
                 </div>
               </TableCell>
               <TableCell className="text-center">
-                {u.banned ? (
-                  <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-300">
-                    已禁用
+                {u.status === "1" ? (
+                  <Badge variant="destructive" className="bg-yellow-100 text-yellow-700 border-yellow-300">
+                    已停用
                   </Badge>
                 ) : (
                   <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-300">

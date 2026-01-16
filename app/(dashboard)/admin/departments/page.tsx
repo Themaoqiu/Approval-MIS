@@ -59,6 +59,7 @@ export default function DepartmentsPage() {
         setDepartments(data);
       }
     } catch (error) {
+      toast.error("获取部门列表失败");
       console.error("获取部门列表失败:", error);
     } finally {
       setLoading(false);
@@ -71,7 +72,8 @@ export default function DepartmentsPage() {
   };
 
   const handleDelete = async (deptId: number) => {
-    if (!confirm("确定要删除该部门吗？")) return;
+    if (!confirm("确定要删除该部门吗？")) 
+      return;
 
     try {
       const response = await fetch(`/api/admin/departments/${deptId}`, {

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +12,6 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Trash2, Plus } from "lucide-react";
-import { ApprovalRuleDialog } from "./ApprovalRuleDialog";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 import { FileEdit } from "lucide-react";
 import { Card } from "../ui/card";
@@ -47,76 +45,25 @@ const APPROVAL_MODES = {
   "or-sign": "或签(一人同意)",
 };
 
-export function ApprovalRulesTable() {
-  const [rules, setRules] = useState<ApprovalRule[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingRule, setEditingRule] = useState<ApprovalRule | undefined>();
+interface ApprovalRulesTableProps {
+  approvalRules: ApprovalRule[];
+  onEdit: (rule: ApprovalRule) => void;
+  onDelete: (ruleId: number) => Promise<void>;
+}
 
-  useEffect(() => {
-    fetchRules();
-  }, []);
-
-  const fetchRules = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin/approval-rules");
-      const data = await res.json();
-      setRules(data.rules || []);
-    } catch (error) {
-      toast.error("加载失败");
-    } finally {
-      setLoading(false);
-    }
+export function ApprovalRulesTable({ approvalRules, onEdit, onDelete }: ApprovalRulesTableProps) {
+  const handleEdit = (rule: ApprovalRule) => {
+    onEdit(rule);
   };
 
   const handleDelete = async (ruleId: number) => {
     if (!confirm("确定要删除这条规则吗?")) return;
-
-    try {
-      const res = await fetch(`/api/admin/approval-rules/${ruleId}`, {
-        method: "DELETE",
-      });
-
-      if (res.ok) {
-        toast.success("删除成功");
-        fetchRules();
-      } else {
-        const error = await res.json();
-        toast.error(error.error || "删除失败");
-      }
-    } catch (error) {
-      toast.error("删除失败");
-    }
+    await onDelete(ruleId);
   };
-
-  const handleEdit = (rule: ApprovalRule) => {
-    setEditingRule(rule);
-    setDialogOpen(true);
-  };
-
-  const handleCreate = () => {
-    setEditingRule(undefined);
-    setDialogOpen(true);
-  };
-
-  const handleDialogClose = (success?: boolean) => {
-    setDialogOpen(false);
-    setEditingRule(undefined);
-    if (success) {
-      fetchRules();
-    }
-  };
-
-  if (loading) {
-    return <div className="text-center py-8">加载中...</div>;
-  }
 
   return (
     <div className="space-y-4">
-      
-
-      {rules.length === 0 ? (
+      {approvalRules.length === 0 ? (
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
@@ -126,14 +73,15 @@ export function ApprovalRulesTable() {
             <EmptyDescription>还没有配置任何审批规则</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button onClick={handleCreate}>
+            <Button onClick={() => onEdit(undefined as any)}>
               <Plus className="h-4 w-4 mr-2" />
               新建规则
             </Button>
           </EmptyContent>
         </Empty>
       ) : (
-        <Card className="p-0 border">
+        <>
+          <Card className="p-0 border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -148,7 +96,7 @@ export function ApprovalRulesTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rules.map((rule) => (
+              {approvalRules.map((rule) => (
                 <TableRow key={rule.ruleId}>
                   <TableCell className="text-center">
                     <div className="font-medium">{rule.name}</div>
@@ -216,13 +164,8 @@ export function ApprovalRulesTable() {
             </TableBody>
           </Table>
         </Card>
+        </>
       )}
-
-      <ApprovalRuleDialog
-        open={dialogOpen}
-        onOpenChange={handleDialogClose}
-        rule={editingRule}
-      />
     </div>
   );
 }
