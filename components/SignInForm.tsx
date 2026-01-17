@@ -5,22 +5,28 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { signIn } from "@/lib/auth-clients";
 import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { FcGoogle } from "react-icons/fc";
+import { FaGithub } from "react-icons/fa";
 
 export default function SignInForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    const formData = new FormData(e.currentTarget);
-
     const res = await signIn.email({
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
+      email,
+      password,
     });
 
     setLoading(false);
@@ -33,62 +39,106 @@ export default function SignInForm() {
     }
   };
 
+  const handleGoogleSignIn = () => {
+    toast.info("Google 登录暂未开放");
+  };
+
+  const handleGithubSignIn = () => {
+    toast.info("GitHub 登录暂未开放");
+  };
+
   return (
-    <div className="bg-card rounded-lg shadow-lg p-8">
-      <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold">登录</h1>
+    <Card className="w-full border shadow-sm">
+      <CardHeader className="flex items-center justify-center text-center p-3">
+        <CardTitle className="text-4xl">
+          欢迎回来！
+        </CardTitle>
+      </CardHeader>
+      <div className="px-7 ">
+        <Separator />
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
-          <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
-            {error}
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <Input
+              id="email"
+              type="email"
+              placeholder="输入邮箱地址"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+              required
+            />
           </div>
-        )}
 
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-2">
-            邮箱
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="xxx@email.com"
-          />
-        </div>
+          <div>
+            <Input
+              id="password"
+              type="password"
+              placeholder="输入密码"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+              required
+            />
+          </div>
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium mb-2">
-            密码
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder=""
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
-        >
-          {loading ? "登录中..." : "登录"}
-        </button>
-      </form>
-
-      <div className="mt-6 text-center text-sm">
-        <span className="text-muted-foreground">还没有账号？</span>{" "}
-        <Link href="/sign-up" className="text-primary hover:underline">
-          立即注册
-        </Link>
+          <Button
+            type="submit"
+            disabled={loading}
+            size="lg"
+            className="w-full"
+          >
+            {loading ? "登录中..." : "登录"}
+          </Button>
+        </form>
+      </CardContent>
+      <div className="px-7">
+        <Separator />
       </div>
-    </div>
+
+      <CardContent className=" flex flex-col gap-y-4">
+        <Button
+          variant="secondary"
+          size="lg"
+          className="w-full"
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+        >
+          <FcGoogle className="mr-2 size-5" />
+          使用 Google 登录
+        </Button>
+        <Button
+          variant="secondary"
+          size="lg"
+          className="w-full"
+          onClick={handleGithubSignIn}
+          disabled={loading}
+        >
+          <FaGithub className="mr-2 size-5" />
+          使用 GitHub 登录
+        </Button>
+      </CardContent>
+
+      <div className="px-7">
+        <Separator />
+      </div>
+
+      <CardContent className="flex items-center justify-center">
+        <p>
+          还没有账号？
+          <Link href="/sign-up">
+            <span className="text-blue-700">&nbsp;注册新账号</span>
+          </Link>
+        </p>
+      </CardContent>
+    </Card>
   );
 }

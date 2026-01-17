@@ -16,6 +16,7 @@ import {
   BarChart3,
   FileEdit,
   Settings,
+  LogOut,
 } from "lucide-react";
 import {
   Sidebar,
@@ -29,6 +30,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
 import {
   Collapsible,
@@ -36,10 +38,23 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useSession, signOut } from "@/lib/auth-clients";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function AppSidebar() {
   const pathname = usePathname();
   const { isApprover, isAdmin } = usePermissions();
+  const { data: session } = useSession();
+  const router = useRouter();
 
   const baseNavItems = [
     { name: "仪表板", href: "/dashboard", icon: Home },
@@ -72,6 +87,26 @@ export default function AppSidebar() {
   ];
 
   const isActive = (href: string) => pathname === href;
+
+  if (!session?.user) return null;
+
+  const { user } = session;
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("已退出登录");
+    router.push("/sign-in");
+  };
+
+  const getInitials = (name?: string | null) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -224,6 +259,73 @@ export default function AppSidebar() {
           </SidebarGroup>
         )}
       </SidebarContent>
+
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+                  <Avatar className="h-8 w-8 rounded-lg">
+                    <AvatarImage src={user.image || undefined} alt={user.name} />
+                    <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">
+                      {getInitials(user.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">{user.name || "未命名用户"}</span>
+                    <span className="truncate text-xs">{user.email}</span>
+                  </div>
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent
+                className="w-56 rounded-lg"
+                side="right"
+                align="end"
+                sideOffset={4}
+              >
+                <div className="flex items-center gap-3 p-2">
+                  <Avatar className="h-10 w-10 rounded-lg shrink-0">
+                    <AvatarImage src={user.image || undefined} alt={user.name} />
+                    <AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs">
+                      {getInitials(user.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate">
+                      {user.name || "未命名用户"}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {user.email}
+                    </p>
+                  </div>
+                </div>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                  onClick={() => router.push("/settings/profile")}
+                  className="cursor-pointer"
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  个人信息设置
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="cursor-pointer text-red-600 hover:text-red-600"
+                >
+                  <LogOut className="text-red-600 mr-2 h-4 w-4" />
+                  退出登录
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

@@ -5,21 +5,26 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
 import { signUp } from "@/lib/auth-clients";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { FcGoogle } from "react-icons/fc";
+import { FaGithub } from "react-icons/fa";
 
 export default function SignUpForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const password = formData.get("password") as string;
-    const confirmPassword = formData.get("confirmPassword") as string;
-    const nickName = formData.get("nickName") as string;
 
     if (password !== confirmPassword) {
       setError("两次输入的密码不匹配");
@@ -28,8 +33,8 @@ export default function SignUpForm() {
     }
 
     const formValues = await signUp.email({
-      name: formData.get("username") as string,
-      email: formData.get("email") as string,
+      name: username,
+      email: email,
       password: password,
     });
 
@@ -39,111 +44,136 @@ export default function SignUpForm() {
       setError(formValues.error.message || "注册失败");
     } else {
       toast.success("注册成功，请登录");
-      // 使用 replace 而不是 push，防止后退
       router.replace("/sign-in");
     }
   };
 
+  const handleGoogleSignUp = () => {
+    toast.info("Google 注册暂未开放");
+  };
+
+  const handleGithubSignUp = () => {
+    toast.info("GitHub 注册暂未开放");
+  };
+
   return (
-    <div className="bg-card rounded-lg shadow-lg p-8">
-      <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold">注册</h1>
-        <p className="text-sm text-muted-foreground mt-2">
-          创建新账号开始使用系统
-        </p>
+    <Card className="w-full border shadow-sm">
+      <CardHeader className="flex items-center justify-center text-center p-3">
+        <CardTitle className="text-4xl">
+          创建新账号
+        </CardTitle>
+      </CardHeader>
+
+      <div className="px-7 mb-2">
+        <Separator />
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
-          <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
-            {error}
+      <CardContent className="">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <Input
+              id="username"
+              type="text"
+              placeholder="输入用户名"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={loading}
+              required
+            />
           </div>
-        )}
 
-        <div>
-          <label htmlFor="username" className="block text-sm font-medium mb-2">
-            用户名 *
-          </label>
-          <input
-            id="username"
-            name="username"
-            type="text"
-            required
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="请输入用户名"
-          />
-        </div>
+          <div>
+            <Input
+              id="email"
+              type="email"
+              placeholder="输入邮箱地址"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+              required
+            />
+          </div>
 
-        <div>
-          <label htmlFor="nickName" className="block text-sm font-medium mb-2">
-            昵称
-          </label>
-          <input
-            id="nickName"
-            name="nickName"
-            type="text"
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="请输入昵称（可选）"
-          />
-        </div>
+          <div>
+            <Input
+              id="password"
+              type="password"
+              placeholder="输入密码"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+              required
+            />
+          </div>
 
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-2">
-            邮箱 *
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="your@email.com"
-          />
-        </div>
+          <div>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder="确认密码"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={loading}
+              required
+            />
+          </div>
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium mb-2">
-            密码 *
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="至少 6 位"
-          />
-        </div>
+          <Button
+            type="submit"
+            disabled={loading}
+            size="lg"
+            className="w-full"
+          >
+            {loading ? "注册中..." : "注册"}
+          </Button>
+        </form>
+      </CardContent>
 
-        <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
-            确认密码 *
-          </label>
-          <input
-            id="confirmPassword"
-            name="confirmPassword"
-            type="password"
-            required
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="再次输入密码"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
-        >
-          {loading ? "注册中..." : "注册"}
-        </button>
-      </form>
-
-      <div className="mt-6 text-center text-sm">
-        <span className="text-muted-foreground">已有账号？</span>{" "}
-        <Link href="/sign-in" className="text-primary hover:underline">
-          立即登录
-        </Link>
+      <div>
+        <Separator />
       </div>
-    </div>
+
+      <CardContent className=" flex flex-col gap-y-4">
+        <Button
+          variant="secondary"
+          size="lg"
+          className="w-full"
+          onClick={handleGoogleSignUp}
+          disabled={loading}
+        >
+          <FcGoogle className="mr-2 size-5" />
+          使用 Google 注册
+        </Button>
+        <Button
+          variant="secondary"
+          size="lg"
+          className="w-full"
+          onClick={handleGithubSignUp}
+          disabled={loading}
+        >
+          <FaGithub className="mr-2 size-5" />
+          使用 GitHub 注册
+        </Button>
+      </CardContent>
+
+      <div className="px-7">
+        <Separator />
+      </div>
+
+      <CardContent className="flex items-center justify-center">
+        <p>
+          已有账号？
+          <Link href="/sign-in">
+            <span className="text-blue-700">&nbsp;立即登录</span>
+          </Link>
+        </p>
+      </CardContent>
+    </Card>
   );
 }

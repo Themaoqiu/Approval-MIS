@@ -11,7 +11,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import Header from "@/components/layout/Header";
 import { Toaster } from "sonner";
 import { usePathname } from "next/navigation";
 
@@ -80,9 +79,6 @@ export default function DashboardLayout({
                 </BreadcrumbList>
               </Breadcrumb>
             )}
-          </div>
-          <div className="ml-auto px-4">
-            <Header />
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
