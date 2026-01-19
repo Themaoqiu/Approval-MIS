@@ -37,6 +37,7 @@ import { type DateRange } from "react-day-picker";
 import { ApproverSelector } from "@/components/approver-selector/ApproverSelector";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "../ui/separator";
+import { motion } from "framer-motion";
 
 interface ApprovalRule {
   ruleId: number;
@@ -79,7 +80,6 @@ export function ApplicationForm() {
     ? differenceInDays(leaveData.dateRange.to, leaveData.dateRange.from) + 1
     : 0;
 
-  // 当申请类型改变时,获取适用的审批规则和审批人列表
   useEffect(() => {
     if (type) {
       fetchApprovalRule();
@@ -196,6 +196,11 @@ export function ApplicationForm() {
   const selectedApprovers = availableApprovers.filter(a => selectedApproverIds.includes(a.id));
 
   return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
     <Card className="p-6">
       <h2 className="text-2xl font-bold">新建申请</h2>
       <Separator />
@@ -391,7 +396,7 @@ export function ApplicationForm() {
                   )}
 
                   {availableApprovers.length === 0 && (
-                    <div className="text-sm text-muted-foreground text-center p-4 bg-yellow-50 border border-yellow-200 rounded">
+                    <div className="text-sm text-muted-foreground text-center p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                       未找到符合条件的审批人,请联系管理员配置审批规则
                     </div>
                   )}
@@ -420,5 +425,6 @@ export function ApplicationForm() {
         filterUserIds={availableApprovers.map(a => a.id)}
       />
     </Card>
+    </motion.div>
   );
 }

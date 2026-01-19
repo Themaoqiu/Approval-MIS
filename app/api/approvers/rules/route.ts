@@ -83,14 +83,18 @@ export async function GET(request: NextRequest) {
     if (rule.specificUserIds) {
       const userIds = JSON.parse(rule.specificUserIds);
       approverFilter.id = { in: userIds };
-    } else if (rule.approverPostId) {
-      // 按岗位筛选
-      approverFilter.userPosts = {
-        some: { postId: rule.approverPostId },
-      };
-    } else if (rule.approverDeptId) {
-      // 按部门筛选
-      approverFilter.deptId = rule.approverDeptId;
+    } else {
+      if (rule.applicantDeptId && !rule.approverDeptId) {
+        approverFilter.deptId = rule.applicantDeptId;
+      } else if (rule.approverDeptId) {
+        approverFilter.deptId = rule.approverDeptId;
+      }
+
+      if (rule.approverPostId) {
+        approverFilter.userPosts = {
+          some: { postId: rule.approverPostId },
+        };
+      }
     }
 
     const approvers = await prisma.user.findMany({

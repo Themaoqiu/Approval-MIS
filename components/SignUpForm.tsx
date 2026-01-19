@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
-import { signUp } from "@/lib/auth-clients";
+import { authClient } from "@/lib/auth-clients";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ export default function SignUpForm() {
       return;
     }
 
-    const formValues = await signUp.email({
+    const formValues = await authClient.signUp.email({
       name: username,
       email: email,
       password: password,
@@ -48,12 +48,28 @@ export default function SignUpForm() {
     }
   };
 
-  const handleGoogleSignUp = () => {
-    toast.info("Google 注册暂未开放");
+  const handleGoogleSignUp = async () => {
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/dashboard",
+      });
+    } catch (error) {
+      console.error("Google 注册失败:", error);
+      toast.error("Google 注册失败");
+    }
   };
 
-  const handleGithubSignUp = () => {
-    toast.info("GitHub 注册暂未开放");
+  const handleGithubSignUp = async () => {
+    try {
+      await authClient.signIn.social({
+        provider: "github",
+        callbackURL: "/dashboard",
+      });
+    } catch (error) {
+      console.error("GitHub 注册失败:", error);
+      toast.error("GitHub 注册失败");
+    }
   };
 
   return (

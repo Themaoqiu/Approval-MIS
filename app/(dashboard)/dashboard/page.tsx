@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-clients";
 import { useEffect, useState } from "react";
@@ -12,7 +13,9 @@ interface DashboardStatsData {
   pending: number;
   processed: number;
   total: number;
+  systemTotal?: number;
   pendingApprovals?: number;
+  processedApprovals?: number;
   userRole: string;
   recentApplications: Array<{
     id: number;
@@ -62,27 +65,58 @@ export default function DashboardPage() {
     return <p className="text-center mt-8 text-white">Redirecting...</p>;
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6">仪表板</h1>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] as const }}
+    >
+      <motion.h1
+        className="text-3xl font-bold mb-6 dark:text-white"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1, duration: 0.4 }}
+      >
+        仪表板
+      </motion.h1>
 
-      <DashboardStats
-        pending={stats?.pending ?? 0}
-        processed={stats?.processed ?? 0}
-        total={stats?.total ?? 0}
-        pendingApprovals={stats?.pendingApprovals ?? 0}
-        isUser={isUser}
-        isApprover={isApprover}
-        isAdmin={isAdmin}
-        loading={loading}
-      />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.4 }}
+      >
+        <DashboardStats
+          pending={stats?.pending ?? 0}
+          processed={stats?.processed ?? 0}
+          total={stats?.total ?? 0}
+          systemTotal={stats?.systemTotal ?? 0}
+          pendingApprovals={stats?.pendingApprovals ?? 0}
+          processedApprovals={stats?.processedApprovals ?? 0}
+          isUser={isUser}
+          isApprover={isApprover}
+          isAdmin={isAdmin}
+          loading={loading}
+        />
+      </motion.div>
 
-      <RecentApplicationsList
-        applications={stats?.recentApplications ?? []}
-        loading={loading}
-        isAdmin={isAdmin}
-      />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.4 }}
+      >
+        <RecentApplicationsList
+          applications={stats?.recentApplications ?? []}
+          loading={loading}
+          isAdmin={isAdmin}
+        />
+      </motion.div>
 
-      <RoleInfo isAdmin={isAdmin} isApprover={isApprover} isUser={isUser} />
-    </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4, duration: 0.4 }}
+      >
+        <RoleInfo isAdmin={isAdmin} isApprover={isApprover} isUser={isUser} />
+      </motion.div>
+    </motion.div>
   );
 }

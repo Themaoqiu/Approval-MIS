@@ -225,6 +225,7 @@ export default function ApprovalTaskDetailPage({ params }: { params: Promise<{ t
                 <Button
                   onClick={() => handleProcess("approve")}
                   disabled={processing}
+                  className="bg-green-600 hover:bg-green-700 border-green-600 hover:border-green-700 text-white"
                 >
                   同意
                 </Button>
@@ -261,6 +262,7 @@ export default function ApprovalTaskDetailPage({ params }: { params: Promise<{ t
               variant={processAction === "approve" ? "default" : "destructive"}
               onClick={confirmProcess}
               disabled={processing}
+              className={processAction === "approve" ? "bg-green-600 hover:bg-green-700" : ""}
             >
               {processing ? "处理中..." : processAction === "approve" ? "同意" : "拒绝"}
             </Button>

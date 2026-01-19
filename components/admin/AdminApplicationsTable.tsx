@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -45,61 +46,99 @@ export function AdminApplicationsTable({
     return labels[type] || type;
   };
 
+  const rowVariants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: (i: number) => ({
+      opacity: 1,
+      x: 0,
+      transition: { delay: i * 0.03, duration: 0.3 },
+    }),
+  };
+
   return loading ? (
-    <p className="text-center py-8 text-muted-foreground">加载中...</p>
+    <motion.p
+      className="text-center py-8 text-muted-foreground dark:text-slate-400"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+    >
+      加载中...
+    </motion.p>
   ) : applications.length === 0 ? (
-    <Empty>
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <FolderOpen className="h-8 w-8" />
-        </EmptyMedia>
-        <EmptyTitle>暂无申请数据</EmptyTitle>
-        <EmptyDescription>系统中还没有任何申请记录</EmptyDescription>
-      </EmptyHeader>
-    </Empty>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <FolderOpen className="h-8 w-8" />
+          </EmptyMedia>
+          <EmptyTitle>暂无申请数据</EmptyTitle>
+          <EmptyDescription>系统中还没有任何申请记录</EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    </motion.div>
   ) : (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="text-center">标题</TableHead>
-          <TableHead className="text-center">类型</TableHead>
-          <TableHead className="text-center">申请人</TableHead>
-          <TableHead className="text-center">状态</TableHead>
-          <TableHead className="text-center">创建时间</TableHead>
-          <TableHead className="text-center">操作</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {applications.map((app) => (
-          <TableRow key={app.applyId}>
-            <TableCell className="text-center">
-              {app.title}
-            </TableCell>
-            <TableCell className="text-center">{getTypeLabel(app.type)}</TableCell>
-            <TableCell className="text-center">
-              {app.applicant.nickname || app.applicant.username}
-            </TableCell>
-            <TableCell className="text-center">
-              <div className="flex justify-center">
-                <ApplicationStatusBadge status={app.status} />
-              </div>
-            </TableCell>
-            <TableCell className="text-center">
-              {new Date(app.createdAt).toLocaleDateString("zh-CN")}
-            </TableCell>
-            <TableCell className="text-center">
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => router.push(`/applications/${app.applyId}`)}
-                title="查看详情"
-              >
-                <Eye className="h-4 w-4" />
-              </Button>
-            </TableCell>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] as const }}
+    >
+      <Table>
+        <TableHeader>
+          <TableRow className="dark:border-slate-700 dark:hover:bg-slate-800/30">
+            <TableHead className="text-center dark:text-slate-300">标题</TableHead>
+            <TableHead className="text-center dark:text-slate-300">类型</TableHead>
+            <TableHead className="text-center dark:text-slate-300">申请人</TableHead>
+            <TableHead className="text-center dark:text-slate-300">状态</TableHead>
+            <TableHead className="text-center dark:text-slate-300">创建时间</TableHead>
+            <TableHead className="text-center dark:text-slate-300">操作</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {applications.map((app, index) => (
+            <motion.tr
+              key={app.applyId}
+              custom={index}
+              initial="hidden"
+              animate="visible"
+              variants={rowVariants}
+              className="dark:border-slate-700 dark:hover:bg-slate-800/50 transition-colors duration-200"
+            >
+              <TableCell className="text-center dark:text-slate-300">
+                {app.title}
+              </TableCell>
+              <TableCell className="text-center dark:text-slate-300">{getTypeLabel(app.type)}</TableCell>
+              <TableCell className="text-center dark:text-slate-300">
+                {app.applicant.nickname || app.applicant.username}
+              </TableCell>
+              <TableCell className="text-center">
+                <div className="flex justify-center">
+                  <ApplicationStatusBadge status={app.status} />
+                </div>
+              </TableCell>
+              <TableCell className="text-center dark:text-slate-300">
+                {new Date(app.createdAt).toLocaleDateString("zh-CN")}
+              </TableCell>
+              <TableCell className="text-center">
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => router.push(`/applications/${app.applyId}`)}
+                    title="查看详情"
+                    className="dark:text-slate-300 dark:hover:bg-slate-700"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                </motion.div>
+              </TableCell>
+            </motion.tr>
+          ))}
+        </TableBody>
+      </Table>
+    </motion.div>
   );
 }

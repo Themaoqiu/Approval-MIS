@@ -78,7 +78,7 @@ export function UserDialog({
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    username: "",
+    name: "",
     nickname: "",
     email: "",
     phone: "",
@@ -89,6 +89,8 @@ export function UserDialog({
     remark: "",
     role: "user",
     postIds: [] as number[],
+    password: "",
+    confirmPassword: "",
   });
 
   useEffect(() => {
@@ -96,7 +98,7 @@ export function UserDialog({
       fetchUserData();
     } else if (!userId && open) {
       setFormData({
-        username: "",
+        name: "",
         nickname: "",
         email: "",
         phone: "",
@@ -107,6 +109,8 @@ export function UserDialog({
         remark: "",
         role: "user",
         postIds: [],
+        password: "",
+        confirmPassword: "",
       });
     }
   }, [userId, open]);
@@ -120,7 +124,7 @@ export function UserDialog({
       if (response.ok) {
         const userData: UserInfo = await response.json();
         setFormData({
-          username: userData.username,
+          name: userData.username,
           nickname: userData.nickname || "",
           email: userData.email,
           phone: userData.phone || "",
@@ -131,6 +135,8 @@ export function UserDialog({
           remark: userData.remark || "",
           role: userData.role || "user",
           postIds: userData.userPosts.map((up) => up.postId),
+          password: "",
+          confirmPassword: "",
         });
       }
     } catch (error) {
@@ -143,31 +149,53 @@ export function UserDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!userId && !formData.password) {
+      toast.error("新增用户必须设置密码");
+      return;
+    }
+
+    if (formData.password && formData.password !== formData.confirmPassword) {
+      toast.error("两次输入的密码不匹配");
+      return;
+    }
+
     setSaving(true);
 
     try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: "PUT",
+      const url = userId ? `/api/admin/users/${userId}` : "/api/admin/users";
+      const method = userId ? "PUT" : "POST";
+      
+      const body: any = {
+        ...formData,
+        name: formData.name, 
+        deptId: formData.deptId ? parseInt(formData.deptId) : null,
+      };
+
+      if (!formData.password) {
+        delete body.password;
+        delete body.confirmPassword;
+      }
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...formData,
-          deptId: formData.deptId ? parseInt(formData.deptId) : null,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (response.ok) {
-        toast.success("保存成功");
+        toast.success(userId ? "保存成功" : "新增用户成功");
         onOpenChange(false);
         onSuccess();
       } else {
         const error = await response.json();
-        toast.error(error.error || "保存失败");
+        toast.error(error.error || (userId ? "保存失败" : "新增失败"));
       }
     } catch (error) {
-      console.error("保存失败:", error);
-      toast.error("保存失败");
+      console.error("操作失败:", error);
+      toast.error(userId ? "保存失败" : "新增失败");
     } finally {
       setSaving(false);
     }
@@ -185,11 +213,11 @@ export function UserDialog({
   if (loading) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto dark:bg-card dark:border-slate-700">
           <DialogHeader>
-            <DialogTitle>编辑用户信息</DialogTitle>
+            <DialogTitle className="dark:text-white">{userId ? "编辑用户信息" : "新增用户"}</DialogTitle>
           </DialogHeader>
-          <div className="text-center py-8">加载中...</div>
+          <div className="text-center py-8 dark:text-slate-400">加载中...</div>
         </DialogContent>
       </Dialog>
     );
@@ -197,28 +225,29 @@ export function UserDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto dark:bg-card dark:border-slate-700">
         <DialogHeader>
-          <DialogTitle>编辑用户信息</DialogTitle>
+          <DialogTitle className="dark:text-white">{userId ? "编辑用户信息" : "新增用户"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <FieldGroup>
             <FieldSet>
-              <FieldLegend>基本信息</FieldLegend>
-              <FieldSeparator />
+              <FieldLegend className="dark:text-white">基本信息</FieldLegend>
+              <FieldSeparator className="dark:opacity-20" />
               <FieldGroup>
                 <div className="grid grid-cols-2 gap-4">
                   <Field>
-                    <FieldLabel htmlFor="username">用户名 *</FieldLabel>
+                    <FieldLabel htmlFor="name" className="dark:text-slate-300">用户名 *</FieldLabel>
                     <Input
-                      id="username"
-                      value={formData.username}
+                      id="name"
+                      value={formData.name}
                       onChange={(e) =>
-                        setFormData({ ...formData, username: e.target.value })
+                        setFormData({ ...formData, name: e.target.value })
                       }
+                      className="dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder:text-slate-500"
                       required
                     />
-                    <FieldDescription>用户登录账号</FieldDescription>
+                    <FieldDescription className="dark:text-slate-400">用户登录账号</FieldDescription>
                   </Field>
 
                   <Field>
@@ -312,6 +341,40 @@ export function UserDialog({
                   />
                   <FieldDescription>用户头像图片地址</FieldDescription>
                 </Field>
+
+                {!userId && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <Field>
+                      <FieldLabel htmlFor="password">密码 *</FieldLabel>
+                      <Input
+                        id="password"
+                        type="password"
+                        value={formData.password}
+                        onChange={(e) =>
+                          setFormData({ ...formData, password: e.target.value })
+                        }
+                        required
+                        minLength={6}
+                        placeholder="请输入密码（至少6位）"
+                      />
+                    </Field>
+
+                    <Field>
+                      <FieldLabel htmlFor="confirmPassword">确认密码 *</FieldLabel>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        value={formData.confirmPassword}
+                        onChange={(e) =>
+                          setFormData({ ...formData, confirmPassword: e.target.value })
+                        }
+                        required
+                        minLength={6}
+                        placeholder="请再次输入密码"
+                      />
+                    </Field>
+                  </div>
+                )}
               </FieldGroup>
             </FieldSet>
 

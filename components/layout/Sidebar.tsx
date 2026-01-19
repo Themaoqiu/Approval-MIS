@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSession, signOut } from "@/lib/auth-clients";
 import { toast } from "sonner";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { useRouter } from "next/navigation";
 
 export default function AppSidebar() {
@@ -113,26 +114,31 @@ export default function AppSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link href="/dashboard">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Home className="size-4" />
-                </div>
-                <div className="flex flex-1 items-center justify-between gap-2">
-                  <span className="truncate font-semibold text-sm">审批管理系统</span>
-                  {isAdmin && (
-                    <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white border-0 shrink-0">
-                      管理员
-                    </Badge>
-                  )}
-                  {!isAdmin && isApprover && (
-                    <Badge className="bg-green-500 hover:bg-green-600 text-white border-0 shrink-0">
-                      审批员
-                    </Badge>
-                  )}
-                </div>
-              </Link>
-            </SidebarMenuButton>
+            <div className="flex items-center gap-2">
+              <SidebarMenuButton size="lg" asChild className="flex-1">
+                <Link href="/dashboard">
+                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                    <Home className="size-4" />
+                  </div>
+                  <div className="flex flex-1 items-center gap-2">
+                    <span className="truncate font-semibold text-sm">审批管理系统</span>
+                    {isAdmin && (
+                      <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white border-0 shrink-0">
+                        管理员
+                      </Badge>
+                    )}
+                    {!isAdmin && isApprover && (
+                      <Badge className="bg-green-500 hover:bg-green-600 text-white border-0 shrink-0">
+                        审批员
+                      </Badge>
+                    )}
+                  </div>
+                </Link>
+              </SidebarMenuButton>
+              <div className="group-data-[collapsible=icon]:hidden">
+                <ThemeToggle />
+              </div>
+            </div>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>

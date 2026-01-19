@@ -20,31 +20,32 @@ export async function GET(request: NextRequest) {
     const isAdmin = userRole === "admin";
     const isApprover = userRole === "approver";
 
-    const baseWhere = isAdmin
-      ? {} // 管理员可以看所有
-      : { userId: userId }; // 普通用户只看自己的
-
-    const pendingCount = await prisma.application.count({
+    // 个人维度：始终按 userId 统计“我的”申请
+    const myPendingCount = await prisma.application.count({
       where: {
-        ...baseWhere,
+        userId,
         status: "pending",
       },
     });
 
-    const processedCount = await prisma.application.count({
+    const myProcessedCount = await prisma.application.count({
       where: {
-        ...baseWhere,
+        userId,
         status: {
           in: ["approved", "rejected"],
         },
       },
     });
 
-    const totalApplications = await prisma.application.count({
-      where: baseWhere,
+    const myTotalApplications = await prisma.application.count({
+      where: { userId },
     });
 
+    // 系统维度（仅管理员/审批员关注，用户忽略）
+    const systemTotalApplications = await prisma.application.count({});
+
     let pendingApprovalCount = 0;
+    let processedApprovalCount = 0;
     if (isApprover || isAdmin) {
       pendingApprovalCount = await prisma.approvalTask.count({
         where: isAdmin
@@ -54,10 +55,19 @@ export async function GET(request: NextRequest) {
               status: "pending",
             },
       });
+
+      processedApprovalCount = await prisma.approvalTask.count({
+        where: isAdmin
+          ? { status: { in: ["approved", "rejected"] } }
+          : {
+              approverId: userId,
+              status: { in: ["approved", "rejected"] },
+            },
+      });
     }
 
     const recentApplications = await prisma.application.findMany({
-      where: baseWhere,
+      where: { userId },
       select: {
         applyId: true,
         type: true,
@@ -72,10 +82,12 @@ export async function GET(request: NextRequest) {
     });
 
     return Response.json({
-      pending: pendingCount,
-      processed: processedCount,
-      total: totalApplications,
-      pendingApprovals: pendingApprovalCount, 
+  pending: myPendingCount,
+  processed: myProcessedCount,
+  total: myTotalApplications,
+  systemTotal: systemTotalApplications,
+      pendingApprovals: pendingApprovalCount,
+      processedApprovals: processedApprovalCount,
       recentApplications: recentApplications.map((app) => ({
         id: app.applyId,
         type: app.type,

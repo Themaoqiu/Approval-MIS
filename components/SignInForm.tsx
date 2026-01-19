@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { signIn } from "@/lib/auth-clients";
+import { authClient } from "@/lib/auth-clients";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,7 @@ export default function SignInForm() {
     setError("");
     setLoading(true);
 
-    const res = await signIn.email({
+    const res = await authClient.signIn.email({
       email,
       password,
     });
@@ -39,12 +39,28 @@ export default function SignInForm() {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    toast.info("Google 登录暂未开放");
+  const handleGoogleSignIn = async () => {
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/dashboard",
+      });
+    } catch (error) {
+      console.error("Google 登录失败:", error);
+      toast.error("Google 登录失败");
+    }
   };
 
-  const handleGithubSignIn = () => {
-    toast.info("GitHub 登录暂未开放");
+  const handleGithubSignIn = async () => {
+    try {
+      await authClient.signIn.social({
+        provider: "github",
+        callbackURL: "/dashboard",
+      });
+    } catch (error) {
+      console.error("GitHub 登录失败:", error);
+      toast.error("GitHub 登录失败");
+    }
   };
 
   return (

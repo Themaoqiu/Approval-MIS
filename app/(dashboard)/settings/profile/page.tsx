@@ -99,6 +99,9 @@ export default function ProfilePage() {
         toast.success("保存成功");
         const data = await response.json();
         setProfile(data);
+        setTimeout(() => {
+          router.back();
+        }, 500);
       } else {
         toast.error("保存失败");
       }
@@ -239,7 +242,7 @@ export default function ProfilePage() {
               <Label>岗位</Label>
               <Input
                 value={
-                  profile.userPosts.length > 0
+                  profile?.userPosts && profile.userPosts.length > 0
                     ? profile.userPosts.map((up) => up.post.name).join(", ")
                     : "未分配"
                 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-clients";
@@ -9,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MyApplicationsTable } from "@/components/application/MyApplicationsTable";
 import { WithdrawDialog } from "@/components/application/WithdrawDialog";
+import { Plus } from "lucide-react";
 
 export default function MyApplicationsPage() {
   const router = useRouter();
@@ -66,41 +68,59 @@ export default function MyApplicationsPage() {
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">我的申请</h1>
-        <Button onClick={() => router.push("/applications/new")}>
-          新建申请
-        </Button>
-      </div>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] as const }}
+    >
+      <motion.div
+        className="flex justify-between items-center mb-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1, duration: 0.4 }}
+      >
+        <h1 className="text-3xl font-bold dark:text-white">我的申请</h1>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button onClick={() => router.push("/applications/new")} className="dark:bg-blue-600 dark:hover:bg-blue-700">
+            <Plus className="h-4 w-4 mr-2" />
+            新建申请
+          </Button>
+        </motion.div>
+      </motion.div>
 
-      <Card className="p-0">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="px-6 pt-6">
-            <TabsList>
-              <TabsTrigger value="all">全部</TabsTrigger>
-              <TabsTrigger value="pending">待审批</TabsTrigger>
-              <TabsTrigger value="approved">已通过</TabsTrigger>
-              <TabsTrigger value="rejected">已拒绝</TabsTrigger>
-              <TabsTrigger value="withdrawn">已撤回</TabsTrigger>
-            </TabsList>
-          </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.4 }}
+      >
+        <Card className="p-0 dark:bg-card dark:border-slate-700">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <div className="px-6 pt-6">
+              <TabsList className="dark:bg-slate-800">
+                <TabsTrigger value="all" className="dark:text-slate-300 dark:data-[state=active]:text-white">全部</TabsTrigger>
+                <TabsTrigger value="pending" className="dark:text-slate-300 dark:data-[state=active]:text-white">待审批</TabsTrigger>
+                <TabsTrigger value="approved" className="dark:text-slate-300 dark:data-[state=active]:text-white">已通过</TabsTrigger>
+                <TabsTrigger value="rejected" className="dark:text-slate-300 dark:data-[state=active]:text-white">已拒绝</TabsTrigger>
+                <TabsTrigger value="withdrawn" className="dark:text-slate-300 dark:data-[state=active]:text-white">已撤回</TabsTrigger>
+              </TabsList>
+            </div>
 
-          <TabsContent value={activeTab} className="mt-0">
-            <MyApplicationsTable
-              applications={applications}
-              loading={loading}
-              onWithdraw={handleWithdraw}
-            />
-          </TabsContent>
-        </Tabs>
-      </Card>
+            <TabsContent value={activeTab} className="mt-0">
+              <MyApplicationsTable
+                applications={applications}
+                loading={loading}
+                onWithdraw={handleWithdraw}
+              />
+            </TabsContent>
+          </Tabs>
+        </Card>
+      </motion.div>
 
       <WithdrawDialog
         open={withdrawDialogOpen}
         onOpenChange={setWithdrawDialogOpen}
         onConfirm={confirmWithdraw}
       />
-    </div>
+    </motion.div>
   );
 }

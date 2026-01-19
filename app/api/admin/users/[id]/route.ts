@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/api-auth";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 
 export async function GET(
@@ -61,35 +63,52 @@ export async function PUT(
       deptId,
       remark,
       postIds,
+      role,
     } = body;
 
-    // 开启事务更新用户和岗位
+    if (username || email) {
+      await auth.api.adminUpdateUser({
+        body: {
+          userId: id,
+          data: {
+            ...(username && { name: username }),
+            ...(email && { email }),
+          },
+        },
+        headers: await headers(),
+      });
+    }
+
+    if (role) {
+      await auth.api.setRole({
+        body: {
+          userId: id,
+          role,
+        },
+        headers: await headers(),
+      });
+    }
+
     const updated = await prisma.$transaction(async (tx) => {
-      // 更新用户信息
       const updatedUser = await tx.user.update({
         where: { id },
         data: {
-          username,
-          nickname,
-          email,
-          phone,
-          sex,
-          avatar,
-          status,
-          deptId,
-          remark,
+          ...(nickname !== undefined && { nickname }),
+          ...(phone !== undefined && { phone }),
+          ...(sex !== undefined && { sex }),
+          ...(avatar !== undefined && { avatar }),
+          ...(status !== undefined && { status }),
+          ...(deptId !== undefined && { deptId }),
+          ...(remark !== undefined && { remark }),
           updatedBy: user.id,
         },
       });
 
-      // 更新岗位关系
       if (postIds !== undefined) {
-        // 删除旧的岗位关系
         await tx.userPost.deleteMany({
           where: { userId: id },
         });
 
-        // 添加新的岗位关系
         if (postIds.length > 0) {
           await tx.userPost.createMany({
             data: postIds.map((postId: number) => ({

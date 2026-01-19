@@ -122,4 +122,25 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Dark mode form elements */
+  .dark input[type="text"],
+  .dark input[type="email"],
+  .dark input[type="password"],
+  .dark input[type="number"],
+  .dark input[type="date"],
+  .dark textarea,
+  .dark select {
+    @apply bg-slate-800 border-slate-700 text-white placeholder:text-slate-500;
+  }
+  
+  .dark input[type="text"]:focus,
+  .dark input[type="email"]:focus,
+  .dark input[type="password"]:focus,
+  .dark input[type="number"]:focus,
+  .dark input[type="date"]:focus,
+  .dark textarea:focus,
+  .dark select:focus {
+    @apply border-slate-600 ring-slate-700;
+  }
 }
