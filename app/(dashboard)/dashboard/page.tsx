@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { usePermissions } from "@/hooks/use-permissions";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { RecentApplicationsList } from "@/components/dashboard/RecentApplicationsList";
-import { RoleInfo } from "@/components/dashboard/RoleInfo";
 
 interface DashboardStatsData {
   pending: number;
@@ -108,14 +107,6 @@ export default function DashboardPage() {
           loading={loading}
           isAdmin={isAdmin}
         />
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4, duration: 0.4 }}
-      >
-        <RoleInfo isAdmin={isAdmin} isApprover={isApprover} isUser={isUser} />
       </motion.div>
     </motion.div>
   );

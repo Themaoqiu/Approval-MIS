@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,27 +13,36 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-interface WithdrawDialogProps {
+interface DeleteConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  title?: string;
+  description?: string;
+  resourceName?: string;
   onConfirm: () => Promise<void>;
+  isDangerous?: boolean;
 }
 
-export function WithdrawDialog({
+export function DeleteConfirmDialog({
   open,
   onOpenChange,
+  title = "删除确认",
+  description,
+  resourceName = "此项",
   onConfirm,
-}: WithdrawDialogProps) {
-  const [withdrawing, setWithdrawing] = useState(false);
+  isDangerous = true,
+}: DeleteConfirmDialogProps) {
+  const [deleting, setDeleting] = useState(false);
 
   const handleConfirm = async () => {
-    setWithdrawing(true);
+    setDeleting(true);
     try {
       await onConfirm();
+      onOpenChange(false);
     } catch (error) {
       console.error("Error:", error);
     } finally {
-      setWithdrawing(false);
+      setDeleting(false);
     }
   };
 
@@ -46,9 +55,9 @@ export function WithdrawDialog({
           transition={{ duration: 0.2 }}
         >
           <DialogHeader>
-            <DialogTitle className="dark:text-white">撤回申请</DialogTitle>
+            <DialogTitle className="dark:text-white">{title}</DialogTitle>
             <DialogDescription className="dark:text-slate-400">
-              确定要撤回此申请吗？撤回后申请将无法继续审批。
+              {description || `确定要删除${resourceName}吗？此操作无法撤销。`}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-6">
@@ -60,7 +69,7 @@ export function WithdrawDialog({
               <Button
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                disabled={withdrawing}
+                disabled={deleting}
                 className="dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
               >
                 取消
@@ -72,12 +81,12 @@ export function WithdrawDialog({
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
               <Button
-                variant="destructive"
+                variant={isDangerous ? "destructive" : "default"}
                 onClick={handleConfirm}
-                disabled={withdrawing}
-                className="dark:bg-red-700 dark:hover:bg-red-800"
+                disabled={deleting}
+                className={isDangerous ? "dark:bg-red-700 dark:hover:bg-red-800" : "dark:bg-slate-700 dark:hover:bg-slate-600"}
               >
-                {withdrawing ? "撤回中..." : "确认撤回"}
+                {deleting ? "删除中..." : "确认删除"}
               </Button>
             </motion.div>
           </DialogFooter>

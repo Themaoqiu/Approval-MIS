@@ -17,6 +17,7 @@ import {
   FileEdit,
   Settings,
   LogOut,
+  ChevronsUp,
 } from "lucide-react";
 import {
   Sidebar,
@@ -282,6 +283,7 @@ export default function AppSidebar() {
                     <span className="truncate font-semibold">{user.name || "未命名用户"}</span>
                     <span className="truncate text-xs">{user.email}</span>
                   </div>
+                  <ChevronsUp className="ml-auto h-4 w-4 shrink-0" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
 

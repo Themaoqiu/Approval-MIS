@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { DepartmentsTable } from "@/components/admin/DepartmentsTable";
 import { DepartmentDialog } from "@/components/admin/DepartmentDialog";
+import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { Plus } from "lucide-react";
 
 interface Department {
@@ -36,6 +38,8 @@ export default function DepartmentsPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingDept, setEditingDept] = useState<Department | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingDeptId, setDeletingDeptId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -71,12 +75,16 @@ export default function DepartmentsPage() {
     setDialogOpen(true);
   };
 
-  const handleDelete = async (deptId: number) => {
-    if (!confirm("确定要删除该部门吗？")) 
-      return;
+  const handleDeleteClick = (deptId: number) => {
+    setDeletingDeptId(deptId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (deletingDeptId === null) return;
 
     try {
-      const response = await fetch(`/api/admin/departments/${deptId}`, {
+      const response = await fetch(`/api/admin/departments/${deletingDeptId}`, {
         method: "DELETE",
       });
 
@@ -121,7 +129,16 @@ export default function DepartmentsPage() {
       <DepartmentsTable
         departments={departments}
         onEdit={handleOpenDialog}
-        onDelete={handleDelete}
+        onDelete={handleDeleteClick}
+      />
+
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="删除部门"
+        description="确定要删除此部门吗？删除后该部门的数据将无法恢复。"
+        resourceName="部门"
+        onConfirm={handleDelete}
       />
     </div>
   );

@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { ApprovalRulesTable } from "@/components/admin/ApprovalRulesTable";
 import { ApprovalRuleDialog } from "@/components/admin/ApprovalRuleDialog";
+import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 
 interface ApprovalRule {
   ruleId: number;
@@ -39,6 +41,8 @@ export default function ApprovalRulesPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<ApprovalRule | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingRuleId, setDeletingRuleId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -74,17 +78,23 @@ export default function ApprovalRulesPage() {
     setDialogOpen(true);
   };
 
-  const handleDelete = async (ruleId: number) => {
-    if (!confirm("确定要删除该规则吗？"))
-      return;
+  const handleDeleteClick = async (ruleId: number) => {
+    setDeletingRuleId(ruleId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (deletingRuleId === null) return;
 
     try {
-      const response = await fetch(`/api/admin/approval-rules/${ruleId}`, {
+      const response = await fetch(`/api/admin/approval-rules/${deletingRuleId}`, {
         method: "DELETE",
       });
 
       if (response.ok) {
         toast.success("删除成功");
+        setDeleteDialogOpen(false);
+        setDeletingRuleId(null);
         fetchApprovalRules();
       } else {
         const error = await response.json();
@@ -113,7 +123,7 @@ export default function ApprovalRulesPage() {
       <ApprovalRulesTable
         approvalRules={approvalRules}
         onEdit={handleOpenDialog}
-        onDelete={handleDelete}
+        onDelete={handleDeleteClick}
       />
 
       <ApprovalRuleDialog
@@ -126,6 +136,15 @@ export default function ApprovalRulesPage() {
         }}
         rule={editingRule}
         onSuccess={fetchApprovalRules}
+      />
+
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="删除规则"
+        description="确定要删除此规则吗？删除后该规则的数据将无法恢复。"
+        resourceName="规则"
+        onConfirm={handleDelete}
       />
     </div>
   );

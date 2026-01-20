@@ -9,7 +9,7 @@ export async function POST(
   const { id } = await params;
   const session = await auth.api.getSession({ headers: req.headers });
   if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "未授权" }, { status: 401 });
   }
 
   const applyId = parseInt(id);

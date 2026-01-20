@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { PostsTable } from "@/components/admin/PostsTable";
 import { PostDialog } from "@/components/admin/PostDialog";
+import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
+import { Plus } from "lucide-react";
 
 interface Post {
   postId: number;
@@ -28,6 +31,8 @@ export default function PostsPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingPostId, setDeletingPostId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -62,11 +67,16 @@ export default function PostsPage() {
     setDialogOpen(true);
   };
 
-  const handleDelete = async (postId: number) => {
-    if (!confirm("确定要删除该岗位吗？")) return;
+  const handleDeleteClick = (postId: number) => {
+    setDeletingPostId(postId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (deletingPostId === null) return;
 
     try {
-      const response = await fetch(`/api/admin/posts/${postId}`, {
+      const response = await fetch(`/api/admin/posts/${deletingPostId}`, {
         method: "DELETE",
       });
 
@@ -107,7 +117,16 @@ export default function PostsPage() {
       <PostsTable
         posts={posts}
         onEdit={handleOpenDialog}
-        onDelete={handleDelete}
+        onDelete={handleDeleteClick}
+      />
+
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="删除岗位"
+        description="确定要删除此岗位吗？删除后该岗位的数据将无法恢复。"
+        resourceName="岗位"
+        onConfirm={handleDelete}
       />
     </div>
   );

@@ -13,14 +13,9 @@ export async function GET(request: NextRequest) {
     const userId = user.id;
     const userRole = user.role;
 
-    // 根据角色设置查询条件
-    // 普通用户只能看自己的申请
-    // 审批人可以看到待审批的任务
-    // 管理员可以看到所有数据
     const isAdmin = userRole === "admin";
     const isApprover = userRole === "approver";
 
-    // 个人维度：始终按 userId 统计“我的”申请
     const myPendingCount = await prisma.application.count({
       where: {
         userId,
@@ -41,7 +36,6 @@ export async function GET(request: NextRequest) {
       where: { userId },
     });
 
-    // 系统维度（仅管理员/审批员关注，用户忽略）
     const systemTotalApplications = await prisma.application.count({});
 
     let pendingApprovalCount = 0;
@@ -82,10 +76,10 @@ export async function GET(request: NextRequest) {
     });
 
     return Response.json({
-  pending: myPendingCount,
-  processed: myProcessedCount,
-  total: myTotalApplications,
-  systemTotal: systemTotalApplications,
+      pending: myPendingCount,
+      processed: myProcessedCount,
+      total: myTotalApplications,
+      systemTotal: systemTotalApplications,
       pendingApprovals: pendingApprovalCount,
       processedApprovals: processedApprovalCount,
       recentApplications: recentApplications.map((app) => ({

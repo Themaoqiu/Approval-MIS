@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -58,7 +57,6 @@ export function ApprovalRulesTable({ approvalRules, onEdit, onDelete }: Approval
   };
 
   const handleDelete = async (ruleId: number) => {
-    if (!confirm("确定要删除这条规则吗?")) return;
     await onDelete(ruleId);
   };
 

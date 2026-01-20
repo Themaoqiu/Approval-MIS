@@ -19,15 +19,29 @@ export async function GET(req: NextRequest) {
   const applications = await prisma.application.findMany({
     where,
     include: {
-      applicant: { select: { username: true, nickname: true } },
-      tasks: {
-        include: {
-          approver: { select: { username: true, nickname: true } }
-        },
-        orderBy: { step: "asc" }
-      }
+      applicant: { 
+        select: { 
+          username: true, 
+          nickname: true 
+        } 
+      },
+        tasks: {
+          include: {
+            approver: { 
+              select: { 
+                username: true, 
+                nickname: true 
+              } 
+            }
+          },
+          orderBy: { 
+            step: "asc" 
+          }
+        }
     },
-    orderBy: { createdAt: "desc" }
+    orderBy: { 
+      createdAt: "desc" 
+    }
   });
 
   return NextResponse.json(applications);

@@ -16,7 +16,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "缺少申请类型" }, { status: 400 });
     }
 
-    // 获取当前用户信息
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       include: {
@@ -30,7 +29,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "用户不存在" }, { status: 404 });
     }
 
-    // 获取对应类型的审批流程
     const process = await prisma.approvalProcess.findFirst({
       where: { type: applicationType, isActive: true },
     });
@@ -39,21 +37,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "未找到对应的审批流程" }, { status: 404 });
     }
 
-    // 查找匹配的审批规则(按优先级排序)
     const rules = await prisma.approvalRule.findMany({
       where: {
         processId: process.processId,
         isActive: true,
         OR: [
-          // 匹配申请人部门
           { applicantDeptId: user.deptId },
-          // 匹配申请人岗位
           {
             applicantPostId: {
               in: user.userPosts.map((up) => up.postId),
             },
           },
-          // 不限制申请人条件
           {
             AND: [{ applicantDeptId: null }, { applicantPostId: null }],
           },
@@ -69,17 +63,14 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // 选择优先级最高的规则
     const rule = rules[0];
 
-    // 根据规则筛选审批人
     let approverFilter: any = {
       role: { in: ["approver", "admin"] },
       status: "0",
       delFlag: "0",
     };
 
-    // 如果指定了具体审批人
     if (rule.specificUserIds) {
       const userIds = JSON.parse(rule.specificUserIds);
       approverFilter.id = { in: userIds };
